@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch: # the issue bot starts CI on its branches this way
 
 permissions:
   contents: read

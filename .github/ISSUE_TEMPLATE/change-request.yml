@@ -1,0 +1,26 @@
+name: Change request
+description: Ask for a new feature or a change to the site.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe what you'd like in plain words. Screenshots help.
+        If you're on the bot's list, it replies here within a few minutes with a preview of the change.
+  - type: textarea
+    id: what
+    attributes:
+      label: What would you like changed or added?
+      placeholder: e.g. On the Randomizer, add a button that picks 5 random chords at once.
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Which page?
+      placeholder: e.g. Polychord Analyzer, Modulation, Randomizer, home page
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Links, examples, screenshots.
