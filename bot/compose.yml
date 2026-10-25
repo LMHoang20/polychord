@@ -1,0 +1,17 @@
+# docker compose -f bot/compose.yml up -d --build
+services:
+  bot:
+    build: .
+    restart: unless-stopped
+    init: true
+    env_file: .env
+    volumes:
+      - state:/state
+    # Root in the container only needs to switch to the agent user, hand it
+    # /work, read and delete its files, and kill its leftover processes.
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, KILL, SETGID, SETUID]
+    security_opt: ["no-new-privileges:true"]
+
+volumes:
+  state:

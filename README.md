@@ -41,6 +41,7 @@ public/            everything that gets deployed
   js/<page>.js     page logic
 test/              node:test suites + a script loader
 vercel.json        hosting config: output dir and security headers (CSP etc.)
+bot/               issue bot that runs in Docker with Claude Code (not deployed)
 ```
 
 The scripts are classic `<script>` tags that share globals, in this load order: `theory.js` → `audio.js` → page script.
@@ -58,15 +59,22 @@ Connecting the GitHub repo to the Vercel project gives a preview deploy for ever
 
 ## Issue bot
 
-People on an allowlist can get changes made without writing code. `.github/workflows/issue-bot.yml` runs Gemini on their request and opens a pull request that closes the issue. A maintainer still reviews and merges it.
+People on an allowlist can get changes made without writing code. A bot implements their request and opens a pull request that closes the issue. A maintainer still reviews and merges it.
+
+The bot can run two ways. Turn on only one, or both will answer:
+
+- **Docker + Claude Code** (`bot/`): runs on your own machine and polls GitHub. See [bot/README.md](bot/README.md).
+- **GitHub Actions + Gemini** (`.github/workflows/issue-bot.yml`): runs on GitHub, set up below. Gemini's free tier allows only 20 requests a day, which isn't enough for one change, so it needs billing turned on. Turn it off with `gh workflow disable issue-bot.yml`.
+
+Either way:
 
 - **Ask:** open any issue (the *Change request* form helps, but a plain issue works too, e.g. from the mobile app), or comment `/bot <what you want>` on any issue. The repo owner can also comment `/bot` to hand an issue to the bot.
 - **Check:** the bot replies with a link to the PR, where Vercel posts a preview link.
 - **Revise:** comment `/bot <what to change>` on the bot's PR.
 
-Gemini only gets to read and edit files and run `npm test`. Only changes to `public/`, `test/` and `README.md` are kept. A separate job applies the patch and opens the PR.
+The AI only gets to read and edit files and run `npm test`. Only changes to `public/`, `test/` and `README.md` are kept, and the AI never holds a GitHub token. Both versions read the allowlist from the `ISSUE_BOT_ALLOWLIST` repo variable.
 
-Setup (once):
+GitHub Actions setup (once):
 
 ```sh
 gh variable set ISSUE_BOT_ALLOWLIST --body '["some-login"]'   # JSON array of GitHub logins
