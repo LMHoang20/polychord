@@ -1,0 +1,12 @@
+# Vercel (project/org IDs for the local CLI link)
+.vercel
+
+# Local-only source material (e.g. raw phone screenshots) — never commit
+private/
+
+# OS / editor cruft
+.DS_Store
+*.log
+
+# Node
+node_modules

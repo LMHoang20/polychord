@@ -1,0 +1,19 @@
+{
+  "name": "tonypoly",
+  "version": "1.0.0",
+  "description": "TonyPoly — browser-based jazz harmony tools: polychord analyzer, modulation ear-training, practice randomizer.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LMHoang20/polychord.git"
+  },
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "npx --yes serve@14.2.4 public",
+    "test": "node --test 'test/*.test.js'"
+  }
+}

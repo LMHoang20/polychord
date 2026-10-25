@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Support TonyPoly and help keep these jazz harmony tools free.">
+<meta name="theme-color" content="#0b0a1a">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+<title>Support · TonyPoly</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="index.html">
+      <span class="nav-logo">🎹</span>
+      <span class="nav-name">TonyPoly</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="polychord.html">Polychord</a>
+      <a href="modulation.html">Modulation</a>
+      <a href="randomizer.html">Randomizer</a>
+      <a href="donate.html" class="nav-donate active">♥ Donate</a>
+    </div>
+  </div>
+</nav>
+
+<div class="app">
+
+  <header>
+    <div class="logo logo-heart">♥</div>
+    <h1>Support TonyPoly</h1>
+    <p class="subtitle">If these tools help your playing, you can chip in to keep them free and growing. Thank you! 🙏</p>
+  </header>
+
+  <section class="panel donate-panel">
+    <div class="qr-frame">
+      <img src="assets/donate-qr.png" width="240" height="240"
+           alt="VietQR bank-transfer code — ACB, NGUYEN SONG TOAN, account 16002667">
+    </div>
+    <div class="donate-info">
+      <h2>Scan to donate</h2>
+      <p class="hint">Open any Vietnamese banking app (VietQR / napas 247), scan the code, and the transfer fills in automatically — or send manually:</p>
+      <div class="bank-rows">
+        <div class="kv"><span class="k">Bank</span><span class="v">ACB · Asia Commercial Bank</span></div>
+        <div class="kv"><span class="k">Account name</span><span class="v">NGUYEN SONG TOAN</span></div>
+        <div class="kv"><span class="k">Account number</span><span class="v"><code id="acctNo" class="acct">16002667</code></span></div>
+      </div>
+      <button class="btn btn-primary" data-label="Copy account number" onclick="copyAcct(event)">Copy account number</button>
+    </div>
+  </section>
+
+</div>
+
+<script src="js/donate.js"></script>
+
+</body>
+</html>

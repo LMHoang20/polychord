@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Ear-training for key changes: transcribe a modulating 8-chord progression and check your answers.">
+<meta name="theme-color" content="#0b0a1a">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+<title>Modulation · TonyPoly</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="index.html">
+      <span class="nav-logo">🎹</span>
+      <span class="nav-name">TonyPoly</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="polychord.html">Polychord</a>
+      <a href="modulation.html" class="active">Modulation</a>
+      <a href="randomizer.html">Randomizer</a>
+      <a href="donate.html" class="nav-donate">♥ Donate</a>
+    </div>
+  </div>
+</nav>
+
+<div class="app">
+
+  <header>
+    <div class="logo">🔀</div>
+    <h1>Modulation</h1>
+    <p class="subtitle">Ear-training for key changes — listen to a modulating 8-chord progression and transcribe it.</p>
+  </header>
+
+  <section class="panel">
+    <h2>Exercise</h2>
+    <p class="hint">Generate a progression that moves through 2–3 keys, then transcribe each chord below. Press <b>Play</b> to listen (browsers need a click to start audio).</p>
+    <div class="mod-options">
+      <div>
+        <label>Keys</label>
+        <select id="optKeys">
+          <option value="random">Random (2–3)</option>
+          <option value="2">2 keys</option>
+          <option value="3">3 keys</option>
+        </select>
+      </div>
+      <div>
+        <label>Tempo</label>
+        <select id="optTempo">
+          <option value="1.25">Slow</option>
+          <option value="0.85" selected>Normal</option>
+          <option value="0.6">Fast</option>
+        </select>
+      </div>
+    </div>
+    <div class="mod-actions">
+      <button class="btn btn-primary" onclick="newExercise(event)">🎲 New Exercise</button>
+      <button class="btn btn-teal" onclick="playExercise(event)">▶ Play</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Your Transcription</h2>
+    <p class="hint">Type each chord you hear — e.g. <b>C</b>, <b>Am</b>, <b>G</b>, <b>Bdim</b>. Enharmonics (C# = Db) and quality spellings (m = min) are accepted. Use ▶ on a slot to replay a single chord; press Enter to move to the next.</p>
+    <div id="slots" class="slots"></div>
+    <div class="mod-actions">
+      <button class="btn btn-primary" onclick="checkAnswers()">Check Answers</button>
+      <button class="btn btn-ghost" onclick="revealAnswers()">Reveal</button>
+    </div>
+    <div id="score" class="score"></div>
+    <div id="keyplan" class="keyplan"></div>
+  </section>
+
+</div>
+
+<script src="js/theory.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/modulation.js"></script>
+
+</body>
+</html>

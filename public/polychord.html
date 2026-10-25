@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Decode two chords into an upper structure, or encode an interpretation back into a polychord — with pitch-class sets, scale hints and audio playback.">
+<meta name="theme-color" content="#0b0a1a">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+<title>Polychord Analyzer · TonyPoly</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="index.html">
+      <span class="nav-logo">🎹</span>
+      <span class="nav-name">TonyPoly</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="polychord.html" class="active">Polychord</a>
+      <a href="modulation.html">Modulation</a>
+      <a href="randomizer.html">Randomizer</a>
+      <a href="donate.html" class="nav-donate">♥ Donate</a>
+    </div>
+  </div>
+</nav>
+
+<div class="app">
+
+<header>
+  <div class="logo">🎹</div>
+  <h1>Polychord Analyzer</h1>
+  <p class="subtitle">Decode chords into an upper structure — or encode one back into a polychord. Hear it all play.</p>
+</header>
+
+<div class="workspace">
+
+  <!-- LEFT: inputs -> Decode -->
+  <div class="col">
+    <section class="panel">
+      <h2>Polychord Input</h2>
+      <p class="hint">Two chords (e.g. C, Dm, G7, Fmaj7). Press ▶ to hear each — or both stacked.</p>
+      <div class="chord-grid">
+        <div>
+          <label>Lower Chord</label>
+          <div class="input-row">
+            <input id="lower" value="C">
+            <button class="play-btn" onclick="playLower(event)" title="Play lower chord" aria-label="Play lower chord">▶</button>
+          </div>
+        </div>
+        <div>
+          <label>Upper Chord</label>
+          <div class="input-row">
+            <input id="upper" value="D">
+            <button class="play-btn" onclick="playUpper(event)" title="Play upper chord" aria-label="Play upper chord">▶</button>
+          </div>
+        </div>
+      </div>
+      <button class="btn play-poly" onclick="playPolychord(event)">🔊 Play Polychord</button>
+    </section>
+
+    <section class="panel">
+      <h2>Direct Notes Input</h2>
+      <p class="hint">Or type raw notes to analyze directly (overrides the chords above).</p>
+      <textarea id="directNotes" rows="1" placeholder="C D E F# G A"></textarea>
+    </section>
+
+    <div id="validationMsg" class="validation-msg"></div>
+    <button id="decodeBtn" class="btn decode-btn" onclick="decode()">Decode &rarr;</button>
+  </div>
+
+  <!-- RIGHT: Upper Structure <- Encode -->
+  <div class="col">
+    <section class="panel us-panel">
+      <h2>Upper Structure</h2>
+      <p class="hint"><b>Decode</b> reads the chords on the left. Or type an interpretation here and <b>Encode</b> to build the polychord.</p>
+
+      <label>Interpretation</label>
+      <input id="interp" list="interpList" value="Cmaj13(#11)" placeholder="e.g. Cmaj13(#11)" autocomplete="off" spellcheck="false">
+      <datalist id="interpList"></datalist>
+
+      <div id="usDisplay" class="us-display"></div>
+
+      <div class="us-actions">
+        <button class="btn play-btn-inline" onclick="playPolychord(event)" title="Play the polychord">▶ Play</button>
+        <button id="encodeBtn" class="btn encode-btn" onclick="encode(event)">&larr; Encode</button>
+      </div>
+    </section>
+  </div>
+
+</div>
+
+<p class="flow-hint">Decode → detect · ← Encode build &nbsp;|&nbsp; go back and forth between the two</p>
+
+<div id="result"></div>
+
+</div>
+
+<script src="js/theory.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/polychord.js"></script>
+
+</body>
+</html>

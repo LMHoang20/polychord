@@ -1,0 +1,6 @@
+# Only public/ is served (see vercel.json). Keep everything else off Vercel's
+# build machines too — especially anything under private/.
+private/
+test/
+.github/
+*.md

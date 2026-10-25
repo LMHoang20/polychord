@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Random practice prompts for musicians — notes, scales, frets or any custom list, saved in a shareable URL.">
+<meta name="theme-color" content="#0b0a1a">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+<title>Randomizer · TonyPoly</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="index.html">
+      <span class="nav-logo">🎹</span>
+      <span class="nav-name">TonyPoly</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="polychord.html">Polychord</a>
+      <a href="modulation.html">Modulation</a>
+      <a href="randomizer.html" class="active">Randomizer</a>
+      <a href="donate.html" class="nav-donate">♥ Donate</a>
+    </div>
+  </div>
+</nav>
+
+<div class="app">
+
+  <header>
+    <div class="logo">🎲</div>
+    <h1>Randomizer</h1>
+    <p class="subtitle">Random practice prompts — notes, scales, frets, or any custom list. Your setup is saved in the URL, so you can bookmark or share it.</p>
+  </header>
+
+  <section class="panel">
+    <div class="rnd-head">
+      <h2>Results</h2>
+      <button class="btn btn-primary" onclick="randomizeAll()">🎲 Randomize All</button>
+    </div>
+    <div class="rnd-grid" id="containers"></div>
+  </section>
+
+  <section class="panel">
+    <div class="rnd-head">
+      <h2>Configuration</h2>
+      <button class="btn btn-ghost" id="addBtn" onclick="addContainer()">+ Add Container</button>
+    </div>
+    <div class="rnd-grid" id="configs"></div>
+  </section>
+
+</div>
+
+<script src="js/randomizer.js"></script>
+
+</body>
+</html>
