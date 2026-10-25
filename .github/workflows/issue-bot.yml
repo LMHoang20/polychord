@@ -6,8 +6,10 @@ name: Issue bot
 # job applies its patch and opens or updates the PR. See README "Issue bot".
 
 on:
+  # The form's label fires "labeled" when the issue is created, and a maintainer
+  # can add the label later to hand any allowlisted user's issue to the bot.
   issues:
-    types: [opened]
+    types: [labeled]
   issue_comment:
     types: [created]
 
@@ -17,7 +19,7 @@ jobs:
   prepare:
     if: >-
       (github.event_name == 'issues'
-        && contains(github.event.issue.labels.*.name, 'enhancement')
+        && github.event.label.name == 'enhancement'
         && contains(fromJSON(vars.ISSUE_BOT_ALLOWLIST || '[]'), github.event.issue.user.login))
       || (github.event_name == 'issue_comment'
         && startsWith(github.event.comment.body, '/bot')

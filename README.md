@@ -60,7 +60,7 @@ Connecting the GitHub repo to the Vercel project gives a preview deploy for ever
 
 People on an allowlist can get changes made without writing code. `.github/workflows/issue-bot.yml` runs Gemini on their request and opens a pull request that closes the issue. A maintainer still reviews and merges it.
 
-- **Ask:** open an issue with the *Change request* form, or comment `/bot <what you want>` on any issue.
+- **Ask:** open an issue with the *Change request* form, or comment `/bot <what you want>` on any issue. A maintainer can also add the `enhancement` label to an allowlisted user's issue.
 - **Check:** the bot replies with a link to the PR, where Vercel posts a preview link.
 - **Revise:** comment `/bot <what to change>` on the bot's PR.
 
