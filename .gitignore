@@ -10,3 +10,6 @@ private/
 
 # Node
 node_modules
+
+# Issue bot secrets
+bot/.env
