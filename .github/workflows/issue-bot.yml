@@ -1,11 +1,14 @@
 name: Issue bot
 
-# Lets allowlisted GitHub users get changes made without touching code: open an
-# issue with the "Change request" form, or comment "/bot <what you want>" on an
-# issue or on a PR the bot opened. Gemini edits a read-only checkout; a separate
-# job applies its patch and opens or updates the PR. See README "Issue bot".
+# Lets allowlisted GitHub users get changes made without touching code: open any
+# issue, or comment "/bot <what you want>" on an issue or on a PR the bot opened.
+# The repo owner can also use "/bot" to hand an issue to the bot. Gemini edits a
+# read-only checkout; a separate job applies its patch and opens or updates the
+# PR. See README "Issue bot".
 
 on:
+  # Any issue from an allowlisted user, not just labeled ones: the GitHub mobile
+  # app doesn't show issue forms, so their issues often have no label.
   issues:
     types: [opened]
   issue_comment:
@@ -17,11 +20,11 @@ jobs:
   prepare:
     if: >-
       (github.event_name == 'issues'
-        && contains(github.event.issue.labels.*.name, 'enhancement')
         && contains(fromJSON(vars.ISSUE_BOT_ALLOWLIST || '[]'), github.event.issue.user.login))
       || (github.event_name == 'issue_comment'
         && startsWith(github.event.comment.body, '/bot')
-        && contains(fromJSON(vars.ISSUE_BOT_ALLOWLIST || '[]'), github.event.comment.user.login))
+        && (contains(fromJSON(vars.ISSUE_BOT_ALLOWLIST || '[]'), github.event.comment.user.login)
+          || github.event.comment.user.login == github.repository_owner))
     runs-on: ubuntu-latest
     permissions:
       contents: read
