@@ -56,6 +56,27 @@ vercel --prod   # production
 
 Connecting the GitHub repo to the Vercel project gives a preview deploy for every pull request and a production deploy from `main`.
 
+## Issue bot
+
+People on an allowlist can get changes made without writing code. `.github/workflows/issue-bot.yml` runs Gemini on their request and opens a pull request that closes the issue. A maintainer still reviews and merges it.
+
+- **Ask:** open an issue with the *Change request* form, or comment `/bot <what you want>` on any issue.
+- **Check:** the bot replies with a link to the PR, where Vercel posts a preview link.
+- **Revise:** comment `/bot <what to change>` on the bot's PR.
+
+Gemini only gets to read and edit files and run `npm test`. Only changes to `public/`, `test/` and `README.md` are kept. A separate job applies the patch and opens the PR.
+
+Setup (once):
+
+```sh
+gh variable set ISSUE_BOT_ALLOWLIST --body '["some-login"]'   # JSON array of GitHub logins
+gh secret set GEMINI_API_KEY                                  # key from aistudio.google.com/apikey
+gh api -X PUT repos/{owner}/{repo}/actions/permissions/workflow \
+  -f default_workflow_permissions=read -F can_approve_pull_request_reviews=true
+```
+
+The last command lets Actions open pull requests. Optionally set the `GEMINI_MODEL` variable to choose a model. Vercel previews must be public for the requester to see them: in the Vercel project, open **Settings → Deployment Protection** and turn off **Vercel Authentication**.
+
 ## Contributing
 
 Issues and pull requests are welcome. Please keep the zero-dependency, no-build approach, add tests for logic changes, and run `npm test` before opening a PR.
