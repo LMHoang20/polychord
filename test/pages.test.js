@@ -56,6 +56,36 @@ test("modulation: answer checking tolerates enharmonics and quality spellings", 
   for (const s of ["", "Cm", "D", "C7", "Csus4"]) assert.equal(ok(s, C), false, s);
 });
 
+/* ---------- MultiNotes ---------- */
+const multi = () => loadScripts(["theory.js", "audio.js", "multinotes.js"], { fields: { optCount: "random" } });
+
+test("multinotes: generates different notes between C3 and C6", () => {
+  const gen = multi().get("generateNotes");
+  for (let run = 0; run < 200; run++) {
+    const count = 1 + (run % 10);
+    const notes = gen(count);
+    assert.equal(notes.length, count);
+    assert.equal(new Set(notes).size, count);
+    for (const n of notes) assert.ok(n >= 48 && n <= 84);
+  }
+});
+
+test("multinotes: counts notes by name, ignoring octave", () => {
+  const counts = multi().data("countByName([60, 72, 64, 79])"); // C4, C5, E4, G5
+  assert.deepEqual(counts, [2, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0]);
+});
+
+test("multinotes: answer checking treats blank as 0", () => {
+  const ok = multi().get("isCountCorrect");
+  assert.equal(ok("2", 2), true);
+  assert.equal(ok(" 2 ", 2), true);
+  assert.equal(ok("", 0), true);
+  assert.equal(ok("0", 0), true);
+  assert.equal(ok("1", 2), false);
+  assert.equal(ok("", 1), false);
+  assert.equal(ok("abc", 0), false);
+});
+
 /* ---------- Randomizer ---------- */
 const rnd = search => loadScripts(["randomizer.js"], { search });
 const cfgParam = cfg => "?cfg=" + encodeURIComponent(JSON.stringify(cfg));
