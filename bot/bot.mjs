@@ -191,7 +191,12 @@ function isLink(path) {
   try { return lstatSync(path).isSymbolicLink(); } catch { return false; }
 }
 
-function copyBack() {
+async function copyBack() {
+  // Nothing of the agent's may still be running, and root takes the files
+  // over, so they can't change between the checks below and the copy. Owning
+  // them also lets root copy them without the FOWNER capability.
+  await killAgentProcesses();
+  await check(run("chown", ["-R", "root:root", WORK]), "chown");
   ALLOWED.forEach(p => assertPlainFiles(join(WORK, p)));
   for (const p of ALLOWED) {
     rmSync(join(REPO_DIR, p), { recursive: true, force: true });
@@ -239,7 +244,7 @@ async function handle(job, ctx) {
     const testsPass = tests.code === 0;
     if (!testsPass) log(`#${target}: tests still failing, opening a draft PR\n${tail(tests)}`);
 
-    copyBack();
+    await copyBack();
     await git("add", "--all", "--", ...ALLOWED);
     const changed = (await run("git", ["diff", "--cached", "--quiet"], { cwd: REPO_DIR })).code === 1;
     if (!changed) {
