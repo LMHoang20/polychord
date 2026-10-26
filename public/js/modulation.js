@@ -10,9 +10,9 @@ const PROG_BASE_MIDI=36;                 // MIDI of C for the progression regist
 const MELODY_LOW=67, MELODY_HIGH=86;     // melody register (G4..D6)
 const MELODY_NOTES=2;                    // melody notes per chord
 
-// Major-key diatonic triads:  I   ii   iii  IV   V   vi   vii°
+// Major-key diatonic chords:  I   ii   iii  IV   V7  vi   vii°  (V is a dominant 7th)
 const MAJOR_OFFSETS       =[0,2,4,5,7,9,11];
-const MAJOR_DEGREE_QUALITY=["","m","m","","","m","dim"];
+const MAJOR_DEGREE_QUALITY=["","m","m","","7","m","dim"];
 const ROMAN=["I","ii","iii","IV","V","vi","vii°"];
 
 // Modulation distances (semitones) that actually change the scale:

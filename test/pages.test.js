@@ -65,6 +65,8 @@ test("modulation: answer checking tolerates enharmonics and quality spellings", 
   const Bbm = { rootPC: 10, quality: "m" }, Bdim = { rootPC: 11, quality: "dim" }, C = { rootPC: 0, quality: "" };
   for (const s of ["Bbm", "A#min", "bb -", "B♭ minor", "A♯m"]) assert.equal(ok(s, Bbm), true, s);
   for (const s of ["Bdim", "Bo", "B°", "Cb dim"]) assert.equal(ok(s, Bdim), true, s);
+  for (const s of ["G7", "g 7"]) assert.equal(ok(s, { rootPC: 7, quality: "7" }), true, s);
+  assert.equal(ok("G", { rootPC: 7, quality: "7" }), false);
   assert.equal(ok("Cb", { rootPC: 11, quality: "" }), true);
   for (const s of ["C", "Cmaj", "CM", "c major"]) assert.equal(ok(s, C), true, s);
   for (const s of ["", "Cm", "D", "C7", "Csus4"]) assert.equal(ok(s, C), false, s);
