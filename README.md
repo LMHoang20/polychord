@@ -5,7 +5,7 @@ A free, browser-based playground for jazz harmony. No accounts, no tracking, no 
 | Tool | What it does |
 | --- | --- |
 | **Polychord Analyzer** | Decodes two stacked chords into an upper structure (e.g. D over C → Cmaj13(#11)), or encodes an interpretation back into a polychord. Shows the pitch-class set, a scale hint and ranked chord interpretations, and plays everything back. |
-| **Modulation** | Ear training for key changes. Generates an 8-chord diatonic progression that moves through 2–3 keys, plays it, and grades your transcription. Enharmonic spellings and common quality spellings are accepted. |
+| **Modulation** | Ear training for key changes. Generates a diatonic progression (8 chords for 2 keys, 16 for 3) that moves through 2–3 keys, optionally with a melody of chord tones, plays it, and grades your transcription. Enharmonic spellings and common quality spellings are accepted. |
 | **Randomizer** | Random practice prompts (notes, scales, frets, or any custom list). The setup lives in the URL, so you can bookmark or share it. |
 
 ## Running locally

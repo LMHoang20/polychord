@@ -124,10 +124,12 @@ function playChordSequence(chordsMidi,opts){
   const gap=opts.gap!=null?opts.gap:0.06;
   const roll=opts.roll!=null?opts.roll:0.02;
   let t=ctx.currentTime+0.08;
-  chordsMidi.forEach(midi=>{
+  chordsMidi.forEach((midi,idx)=>{
     if(!midi||!midi.length) { t+=chordDur+gap; return; }
     const level=Math.min(0.16,0.5/midi.length);
     midi.forEach((m,j)=>playVoice(ctx,midiToFreq(m),t+j*roll,chordDur,level,master));
+    const tune=opts.melody&&opts.melody[idx];
+    if(tune) tune.forEach((m,j)=>playVoice(ctx,midiToFreq(m),t+j*chordDur/tune.length,chordDur/tune.length,0.14,master));
     t+=chordDur+gap;
   });
   return t-(ctx.currentTime);

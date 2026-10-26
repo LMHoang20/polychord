@@ -36,15 +36,28 @@ test("modulation: exercises have 8 diatonic chords across 2–3 distinct consecu
   for (let run = 0; run < 200; run++) {
     const keyCount = run % 2 ? 3 : 2;
     const ex = gen(keyCount);
-    assert.equal(ex.chords.length, 8);
+    const total = keyCount === 3 ? 16 : 8;
+    assert.equal(ex.chords.length, total);
     assert.equal(ex.keys.length, keyCount);
-    assert.equal(ex.lengths.reduce((a, b) => a + b, 0), 8);
+    assert.equal(ex.lengths.reduce((a, b) => a + b, 0), total);
     for (let i = 1; i < ex.keys.length; i++) assert.notEqual(ex.keys[i], ex.keys[i - 1]);
     for (const c of ex.chords) {
       assert.equal(c.rootPC, (c.keyRoot + OFFSETS[c.degree - 1]) % 12);
       assert.equal(c.quality, QUAL[c.degree - 1]);
     }
   }
+});
+
+test("modulation: melody uses only notes of each chord", () => {
+  const m = mod();
+  const ex = m.get("generateExercise")(3, true);
+  const midi = m.get("chordMidi");
+  for (const c of ex.chords) {
+    assert.ok(c.melody.length > 0);
+    const pcs = midi(c).map(n => n % 12);
+    for (const n of c.melody) assert.ok(pcs.includes(n % 12));
+  }
+  assert.equal(m.get("generateExercise")(2).chords[0].melody, undefined);
 });
 
 test("modulation: answer checking tolerates enharmonics and quality spellings", () => {
