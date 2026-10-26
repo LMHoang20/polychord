@@ -41,7 +41,7 @@ function midiToFreq(m){ return 440*Math.pow(2,(m-69)/12); }
 // Oscillator recipes per instrument: two wave types, attack (s), and how much
 // of the level is left at the end of the note (1 = held, lower = plucked).
 const INSTRUMENTS={
-  piano:  {a:"triangle",b:"sine",    attack:0.012,sustain:1},
+  piano:  {a:"triangle",b:"sine",    attack:0.005,sustain:0.2},
   guitar: {a:"sawtooth",b:"triangle",attack:0.005,sustain:0.15},
   violin: {a:"sawtooth",b:"sawtooth",attack:0.09, sustain:1},
   horn:   {a:"sawtooth",b:"sine",    attack:0.06, sustain:1},

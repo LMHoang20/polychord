@@ -6,7 +6,7 @@
    + audio.js (playChordSequence, playMidiNotes, pulse).
    ============================================================ */
 
-const PROG_BASE_MIDI=48;                 // MIDI of C for the progression register (C3)
+const PROG_BASE_MIDI=36;                 // MIDI of C for the progression register (C2)
 const MELODY_LOW=67, MELODY_HIGH=86;     // melody register (G4..D6)
 const MELODY_NOTES=2;                    // melody notes per chord
 

@@ -15,7 +15,7 @@ const NOTE_MAP={
   "G#":8,Ab:8,
   A:9,
   "A#":10,Bb:10,
-  B:11
+  B:11,Cb:11,"B#":0,"E#":5,Fb:4
 };
 
 const NOTE_NAMES=[
