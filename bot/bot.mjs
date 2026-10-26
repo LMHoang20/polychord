@@ -19,6 +19,8 @@ const ALLOWED = ["public", "test", "README.md"];
 const CLAUDE_TIMEOUT_MS = 30 * 60 * 1000;
 const TEST_TIMEOUT_MS = 10 * 60 * 1000;
 const FIX_ATTEMPTS = 2; // extra Claude runs when the final test run fails
+const ATTEMPTS = 3; // tries per request before giving up
+const RETRY_DELAY_MS = 60 * 1000; // wait before retry n is n times this
 
 if (!GH_TOKEN || !REPO) throw new Error("GH_TOKEN and REPO must be set (see .env.example)");
 if (!process.env.CLAUDE_CODE_OAUTH_TOKEN && !process.env.ANTHROPIC_API_KEY) {
@@ -112,13 +114,17 @@ async function allowlist() {
 
 // `since` is when the bot first started, so it never acts on older requests.
 // No milliseconds, to compare as strings with GitHub's timestamps.
+// `pending` is the request being worked on and which attempt it's on, so a
+// restarted bot can pick it up again.
 const state = existsSync(STATE_FILE)
   ? JSON.parse(readFileSync(STATE_FILE, "utf8"))
   : { since: new Date().toISOString().replace(/\.\d+Z$/, "Z"), issues: [], comments: [] };
 
+const saveState = () => writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
+
 function markDone(kind, id) {
   state[kind] = [...state[kind], id].slice(-500);
-  writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
+  saveState();
 }
 
 // ---------- the work ----------
@@ -191,7 +197,12 @@ function isLink(path) {
   try { return lstatSync(path).isSymbolicLink(); } catch { return false; }
 }
 
-function copyBack() {
+async function copyBack() {
+  // Nothing of the agent's may still be running, and root takes the files
+  // over, so they can't change between the checks below and the copy. Owning
+  // them also lets root copy them without the FOWNER capability.
+  await killAgentProcesses();
+  await check(run("chown", ["-R", "root:root", WORK]), "chown");
   ALLOWED.forEach(p => assertPlainFiles(join(WORK, p)));
   for (const p of ALLOWED) {
     rmSync(join(REPO_DIR, p), { recursive: true, force: true });
@@ -199,7 +210,8 @@ function copyBack() {
   }
 }
 
-async function handle(job, ctx) {
+// Throws if anything goes wrong; runJob() retries.
+async function handle(job, ctx, attempt) {
   const { target } = job;
   let issue = target;
   const pr = await gh("GET", `/repos/${REPO}/pulls/${target}`);
@@ -212,8 +224,8 @@ async function handle(job, ctx) {
     issue = Number(m[1]);
   }
   const branch = `bot/issue-${issue}`;
-  log(`#${target}: working on ${branch}`);
-  await comment(target, "On it! I'll comment here when there's something to look at, usually within 10 minutes.");
+  log(`#${target}: working on ${branch}${attempt > 1 ? ` (attempt ${attempt} of ${ATTEMPTS})` : ""}`);
+  if (attempt === 1) await comment(target, "On it! I'll comment here when there's something to look at, usually within 10 minutes.");
 
   try {
     await git("fetch", "--quiet", "--prune", "origin");
@@ -239,7 +251,7 @@ async function handle(job, ctx) {
     const testsPass = tests.code === 0;
     if (!testsPass) log(`#${target}: tests still failing, opening a draft PR\n${tail(tests)}`);
 
-    copyBack();
+    await copyBack();
     await git("add", "--all", "--", ...ALLOWED);
     const changed = (await run("git", ["diff", "--cached", "--quiet"], { cwd: REPO_DIR })).code === 1;
     if (!changed) {
@@ -276,12 +288,33 @@ async function handle(job, ctx) {
           : `Some of the site's automatic checks still fail, so ${ctx.owner} needs to take a look before it can go live.`),
     ].join("\n\n"));
     log(`#${target}: done${testsPass ? "" : " (tests failing)"}, ${url}`);
-  } catch (err) {
-    log(`#${target}: failed`, err);
-    await comment(target, "Sorry, I couldn't finish this one. Something went wrong on my side. You can try again by commenting `/bot` with more detail.");
   } finally {
     await killAgentProcesses();
   }
+}
+
+// Runs a request, retrying when anything fails (GitHub or Claude hiccups, or
+// the bot itself crashing or restarting mid-request). Each attempt is saved
+// before it starts, so a request that keeps crashing the bot still stops
+// after ATTEMPTS.
+async function runJob(job, ctx, attempt = 1) {
+  for (; attempt <= ATTEMPTS; attempt++) {
+    state.pending = { job, attempt };
+    saveState();
+    try {
+      await handle(job, ctx, attempt);
+      break;
+    } catch (err) {
+      log(`#${job.target}: attempt ${attempt} of ${ATTEMPTS} failed`, err);
+      if (attempt < ATTEMPTS) await sleep(RETRY_DELAY_MS * attempt);
+    }
+  }
+  if (attempt > ATTEMPTS) {
+    await comment(job.target, "Sorry, I couldn't finish this one. Something went wrong on my side. You can try again by commenting `/bot` with more detail.")
+      .catch(err => log(`#${job.target}: couldn't post the failure comment`, err));
+  }
+  state.pending = null;
+  saveState();
 }
 
 async function poll(ctx) {
@@ -304,9 +337,9 @@ async function poll(ctx) {
   }
 
   for (const job of jobs) {
-    // Marked first, so a request that crashes the bot isn't retried forever.
+    // Marked first so it's never picked up twice; runJob() handles retries.
     markDone(job.kind, job.id);
-    await handle(job, ctx);
+    await runJob(job, ctx);
   }
 }
 
@@ -317,8 +350,14 @@ async function main() {
   if (!existsSync(join(REPO_DIR, ".git"))) {
     await check(run("git", ["-c", `credential.helper=${CREDENTIALS}`, "clone", "--quiet", `https://github.com/${REPO}.git`, REPO_DIR]), "git clone");
   }
-  writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
+  saveState();
   log(`Watching ${REPO} as ${ctx.me.login}, every ${POLL_MS / 1000}s, for requests since ${state.since}`);
+  if (state.pending) {
+    // The bot stopped mid-request; that counts as a failed attempt.
+    const { job, attempt } = state.pending;
+    log(`#${job.target}: resuming after a restart`);
+    await runJob(job, ctx, attempt + 1);
+  }
   for (;;) {
     try { await poll(ctx); } catch (err) { log("poll failed", err); }
     await sleep(POLL_MS);
