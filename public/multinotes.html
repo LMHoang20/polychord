@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Ear-training for hearing several notes at once: count how many of each note name you hear, whatever the octave.">
+<meta name="theme-color" content="#0b0a1a">
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+
+<title>Multinotes · TonyPoly</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="index.html">
+      <span class="nav-logo">🎹</span>
+      <span class="nav-name">TonyPoly</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="polychord.html">Polychord</a>
+      <a href="modulation.html">Modulation</a>
+      <a href="randomizer.html">Randomizer</a>
+      <a href="multinotes.html" class="active">Multinotes</a>
+      <a href="donate.html" class="nav-donate">♥ Donate</a>
+    </div>
+  </div>
+</nav>
+
+<div class="app">
+
+  <header>
+    <div class="logo">🎶</div>
+    <h1>Multinotes</h1>
+    <p class="subtitle">Ear-training for hearing several notes at once — count how many of each note you hear.</p>
+  </header>
+
+  <section class="panel">
+    <h2>Exercise</h2>
+    <p class="hint">Random notes between C3 and C6 play together. Press <b>New Exercise</b> to listen (browsers need a click to start audio).</p>
+    <div class="mod-options">
+      <div>
+        <label>Number of notes</label>
+        <select id="optCount">
+          <option value="random">Random (1–10)</option>
+          <option value="2">2 notes</option>
+          <option value="3">3 notes</option>
+          <option value="4">4 notes</option>
+          <option value="5">5 notes</option>
+          <option value="6">6 notes</option>
+          <option value="7">7 notes</option>
+          <option value="8">8 notes</option>
+          <option value="9">9 notes</option>
+          <option value="10">10 notes</option>
+        </select>
+      </div>
+      <div>
+        <label>Instrument</label>
+        <select id="optInstrument">
+          <option value="piano">Piano</option>
+          <option value="guitar">Guitar</option>
+          <option value="violin">Violin</option>
+          <option value="horn">Horn</option>
+          <option value="flute">Flute</option>
+          <option value="multi">Multi-Instruments</option>
+        </select>
+      </div>
+    </div>
+    <div class="mod-actions">
+      <button class="btn btn-primary" onclick="newExercise(event)">🎲 New Exercise</button>
+      <button class="btn btn-teal" onclick="playExercise(event)">▶ Play</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Your Answer</h2>
+    <p class="hint">Octave doesn't matter: if C4 and C5 play together, enter <b>2</b> under C. Leave a note empty (or 0) if you don't hear it. Press Enter to move to the next note.</p>
+    <div id="slots" class="slots"></div>
+    <div class="mod-actions">
+      <button class="btn btn-primary" onclick="checkAnswers()">Check Answers</button>
+      <button class="btn btn-ghost" onclick="revealAnswers()">Reveal</button>
+    </div>
+    <div id="score" class="score"></div>
+    <div id="tally" class="score">0 / 0 questions correct</div>
+  </section>
+
+</div>
+
+<script src="js/theory.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/multinotes.js"></script>
+
+</body>
+</html>

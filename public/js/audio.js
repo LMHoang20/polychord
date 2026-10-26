@@ -38,19 +38,30 @@ function stopAllAudio(){
 
 function midiToFreq(m){ return 440*Math.pow(2,(m-69)/12); }
 
-function playVoice(ctx,freq,start,dur,level,dest){
+// Oscillator recipes per instrument: two wave types, attack (s), and how much
+// of the level is left at the end of the note (1 = held, lower = plucked).
+const INSTRUMENTS={
+  piano:  {a:"triangle",b:"sine",    attack:0.012,sustain:1},
+  guitar: {a:"sawtooth",b:"triangle",attack:0.005,sustain:0.15},
+  violin: {a:"sawtooth",b:"sawtooth",attack:0.09, sustain:1},
+  horn:   {a:"sawtooth",b:"sine",    attack:0.06, sustain:1},
+  flute:  {a:"sine",    b:"triangle",attack:0.05, sustain:1}
+};
+
+function playVoice(ctx,freq,start,dur,level,dest,instrument){
+  const ins=INSTRUMENTS[instrument]||INSTRUMENTS.piano;
   const osc=ctx.createOscillator();
   const osc2=ctx.createOscillator();
   const gain=ctx.createGain();
-  osc.type="triangle";
-  osc2.type="sine";
+  osc.type=ins.a;
+  osc2.type=ins.b;
   osc.frequency.value=freq;
   osc2.frequency.value=freq;
   osc2.detune.value=4;               // subtle warmth
-  const attack=0.012, release=0.45;
+  const attack=ins.attack, release=0.45;
   gain.gain.setValueAtTime(0.0001,start);
   gain.gain.exponentialRampToValueAtTime(level,start+attack);
-  gain.gain.setValueAtTime(level,start+dur);
+  gain.gain.exponentialRampToValueAtTime(level*ins.sustain,start+dur);
   gain.gain.exponentialRampToValueAtTime(0.0001,start+dur+release);
   osc.connect(gain); osc2.connect(gain); gain.connect(dest);
   osc.start(start); osc2.start(start);
@@ -80,8 +91,11 @@ function playMidiNotes(midiNotes,opts){
   const dur=opts.dur!=null?opts.dur:1.0;
   const roll=opts.roll!=null?opts.roll:0.045;
   const t0=ctx.currentTime+0.04;
+  const names=Object.keys(INSTRUMENTS);
   midiNotes.forEach((mNote,i)=>{
-    playVoice(ctx,midiToFreq(mNote),t0+i*roll,dur,level,master);
+    // "multi" gives every note its own random instrument
+    const ins=opts.instrument==="multi"?names[Math.floor(Math.random()*names.length)]:opts.instrument;
+    playVoice(ctx,midiToFreq(mNote),t0+i*roll,dur,level,master,ins);
   });
 }
 
