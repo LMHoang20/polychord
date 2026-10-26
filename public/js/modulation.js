@@ -35,6 +35,8 @@ const SPLITS={
 };
 
 let currentExercise=null;   // { chords:[{rootPC,quality,keyRoot,degree}], keys:[pc...], lengths:[...] }
+let scored=false;           // has this exercise been counted in the tally yet?
+let totalCorrect=0, totalQuestions=0;
 
 /* ---------- helpers ---------- */
 function randInt(n){ return Math.floor(Math.random()*n); }
@@ -166,6 +168,7 @@ function buildExercise(){
   const opt=document.getElementById("optKeys").value;
   const keyCount=opt==="random"?pick([2,2,3]):parseInt(opt,10);
   currentExercise=generateExercise(keyCount,document.getElementById("optMode").value==="melody");
+  scored=false;
   renderSlots();
   resetUI();
 }
@@ -200,6 +203,15 @@ function slotKey(e,i){
   else checkAnswers();
 }
 
+// Count each exercise once: the first Check (or Reveal) adds it to the total.
+function updateTally(allCorrect){
+  if(scored) return;
+  scored=true;
+  totalQuestions++;
+  if(allCorrect) totalCorrect++;
+  document.getElementById("tally").textContent=`${totalCorrect} / ${totalQuestions} questions correct`;
+}
+
 function checkAnswers(){
   if(!currentExercise) return;
   let correct=0;
@@ -215,11 +227,13 @@ function checkAnswers(){
   const score=document.getElementById("score");
   score.textContent=`${correct} / ${total} correct`;
   score.className="score"+(correct===total?" score-perfect":"");
+  updateTally(correct===total);
 }
 
 // Fill in the correct chords + Roman numerals and reveal the key plan.
 function revealAnswers(){
   if(!currentExercise) return;
+  updateTally(false);
   currentExercise.chords.forEach((ans,i)=>{
     document.getElementById("slot"+i).value=chordName(ans);
     const wrap=document.getElementById("wrap"+i);

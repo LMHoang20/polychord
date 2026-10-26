@@ -69,6 +69,22 @@ test("modulation: answer checking tolerates enharmonics and quality spellings", 
   for (const s of ["", "Cm", "D", "C7", "Csus4"]) assert.equal(ok(s, C), false, s);
 });
 
+test("modulation: tally counts each question once and only full marks as correct", () => {
+  const m = mod();
+  const n = () => m.data("currentExercise.chords.length");
+  const answer = () => { for (let i = 0; i < n(); i++) m.el("slot" + i).value = m.data(`chordName(currentExercise.chords[${i}])`); };
+  answer();
+  m.get("checkAnswers")();
+  m.get("checkAnswers")();   // checking again must not count twice
+  assert.equal(m.el("tally").textContent, "1 / 1 questions correct");
+  m.get("buildExercise")();
+  m.get("checkAnswers")();   // blank answers: wrong
+  assert.equal(m.el("tally").textContent, "1 / 2 questions correct");
+  m.get("buildExercise")();
+  m.get("revealAnswers")();
+  assert.equal(m.el("tally").textContent, "1 / 3 questions correct");
+});
+
 /* ---------- Multinotes ---------- */
 const multi = () => loadScripts(["theory.js", "audio.js", "multinotes.js"], { fields: { optCount: "random" } });
 
