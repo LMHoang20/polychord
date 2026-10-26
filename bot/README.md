@@ -34,7 +34,7 @@ Claude's own token is visible to Claude, since it needs it. Nothing on your Mac 
    docker compose -f bot/compose.yml logs -f      # watch what it does
    ```
 
-It restarts with Docker. Requests made while your machine is asleep or Docker is stopped are picked up when it's back. On first start it only acts on requests made from then on; comment `/bot` on an older issue to hand it over.
+It restarts with Docker. Requests made while your machine is asleep or Docker is stopped are picked up when it's back. If a request fails, or the bot stops in the middle of one, it tries again (3 attempts in total, 1 and then 2 minutes apart) before telling the requester it couldn't finish. On first start it only acts on requests made from then on; comment `/bot` on an older issue to hand it over.
 
 ## Day to day
 
