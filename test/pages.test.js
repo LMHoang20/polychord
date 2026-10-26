@@ -37,9 +37,10 @@ test("modulation: exercises have 8 diatonic chords across 2–3 distinct consecu
   for (let run = 0; run < 200; run++) {
     const keyCount = run % 2 ? 3 : 2;
     const ex = gen(keyCount);
-    assert.equal(ex.chords.length, 8);
+    const total = keyCount === 3 ? 16 : 8;
+    assert.equal(ex.chords.length, total);
     assert.equal(ex.keys.length, keyCount);
-    assert.equal(ex.lengths.reduce((a, b) => a + b, 0), 8);
+    assert.equal(ex.lengths.reduce((a, b) => a + b, 0), total);
     for (let i = 1; i < ex.keys.length; i++) assert.notEqual(ex.keys[i], ex.keys[i - 1]);
     for (const c of ex.chords) {
       assert.equal(c.rootPC, (c.keyRoot + OFFSETS[c.degree - 1]) % 12);
@@ -48,13 +49,50 @@ test("modulation: exercises have 8 diatonic chords across 2–3 distinct consecu
   }
 });
 
+test("modulation: melody uses only notes of each chord", () => {
+  const m = mod();
+  const ex = m.get("generateExercise")(3, true);
+  const midi = m.get("chordMidi");
+  for (const c of ex.chords) {
+    assert.ok(c.melody.length > 0);
+    const pcs = midi(c).map(n => n % 12);
+    for (const n of c.melody) assert.ok(pcs.includes(n % 12));
+  }
+  assert.equal(m.get("generateExercise")(2).chords[0].melody, undefined);
+});
+
 test("modulation: answer checking tolerates enharmonics and quality spellings", () => {
   const ok = mod().get("isChordCorrect");
   const Bbm = { rootPC: 10, quality: "m" }, Bdim = { rootPC: 11, quality: "dim" }, C = { rootPC: 0, quality: "" };
   for (const s of ["Bbm", "A#min", "bb -", "B♭ minor", "A♯m"]) assert.equal(ok(s, Bbm), true, s);
-  for (const s of ["Bdim", "Bo", "B°", "Cb dim"]) assert.equal(ok(s, Bdim), s !== "Cb dim", s); // Cb isn't in NOTE_MAP
+  for (const s of ["Bdim", "Bo", "B°", "Cb dim"]) assert.equal(ok(s, Bdim), true, s);
+  for (const s of ["G7", "g 7"]) assert.equal(ok(s, { rootPC: 7, quality: "7" }), true, s);
+  assert.equal(ok("G", { rootPC: 7, quality: "7" }), false);
+  assert.equal(ok("Cb", { rootPC: 11, quality: "" }), true);
   for (const s of ["C", "Cmaj", "CM", "c major"]) assert.equal(ok(s, C), true, s);
   for (const s of ["", "Cm", "D", "C7", "Csus4"]) assert.equal(ok(s, C), false, s);
+});
+
+test("modulation: tally counts each question once and only full marks as correct", () => {
+  const m = mod();
+  const n = () => m.data("currentExercise.chords.length");
+  const answer = () => { for (let i = 0; i < n(); i++) m.el("slot" + i).value = m.data(`chordName(currentExercise.chords[${i}])`); };
+  answer();
+  m.get("checkAnswers")();
+  m.get("checkAnswers")();   // checking again must not count twice
+  assert.equal(m.el("tally").textContent, "1 / 1 questions correct");
+  m.get("buildExercise")();
+  m.get("checkAnswers")();   // blank answers: wrong
+  assert.equal(m.el("tally").textContent, "1 / 2 questions correct");
+  m.get("buildExercise")();
+  m.get("revealAnswers")();
+  assert.equal(m.el("tally").textContent, "1 / 3 questions correct");
+});
+
+test("modulation: changing the instrument returns a promise that settles", async () => {
+  const m = mod();
+  await m.get("setInstrument")("organ");
+  assert.equal(m.data("instrument"), "organ");
 });
 
 /* ---------- Multinotes ---------- */
