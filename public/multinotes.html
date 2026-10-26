@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="site.webmanifest">
 
-<title>MultiNotes · TonyPoly</title>
+<title>Multinotes · TonyPoly</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,7 +31,7 @@
       <a href="polychord.html">Polychord</a>
       <a href="modulation.html">Modulation</a>
       <a href="randomizer.html">Randomizer</a>
-      <a href="multinotes.html" class="active">MultiNotes</a>
+      <a href="multinotes.html" class="active">Multinotes</a>
       <a href="donate.html" class="nav-donate">♥ Donate</a>
     </div>
   </div>
@@ -41,7 +41,7 @@
 
   <header>
     <div class="logo">🎶</div>
-    <h1>MultiNotes</h1>
+    <h1>Multinotes</h1>
     <p class="subtitle">Ear-training for hearing several notes at once — count how many of each note you hear.</p>
   </header>
 
@@ -64,6 +64,17 @@
           <option value="10">10 notes</option>
         </select>
       </div>
+      <div>
+        <label>Instrument</label>
+        <select id="optInstrument">
+          <option value="piano">Piano</option>
+          <option value="guitar">Guitar</option>
+          <option value="violin">Violin</option>
+          <option value="horn">Horn</option>
+          <option value="flute">Flute</option>
+          <option value="multi">Multi-Instruments</option>
+        </select>
+      </div>
     </div>
     <div class="mod-actions">
       <button class="btn btn-primary" onclick="newExercise(event)">🎲 New Exercise</button>
@@ -80,6 +91,7 @@
       <button class="btn btn-ghost" onclick="revealAnswers()">Reveal</button>
     </div>
     <div id="score" class="score"></div>
+    <div id="tally" class="score">0 / 0 questions correct</div>
   </section>
 
 </div>

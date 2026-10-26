@@ -1,5 +1,5 @@
 /* ============================================================
-   multinotes.js — MultiNotes ear-training exercise.
+   multinotes.js — Multinotes ear-training exercise.
    Plays up to 10 notes at once (C3–C6) and grades how many of
    each note name (C, C#, D, …) the user heard, ignoring octave.
    Depends on theory.js (NOTE_NAMES) + audio.js (playMidiNotes, pulse).
@@ -10,6 +10,8 @@ const MULTI_HIGH_MIDI=84;   // C6
 const MULTI_MAX_NOTES=10;
 
 let currentNotes=null;      // sorted MIDI numbers, all different
+let scored=false;           // has this exercise been counted in the tally yet?
+let totalCorrect=0, totalQuestions=0;
 
 /* ---------- helpers ---------- */
 function randInt(n){ return Math.floor(Math.random()*n); }
@@ -69,6 +71,7 @@ function buildExercise(){
   const opt=document.getElementById("optCount").value;
   const count=opt==="random"?1+randInt(MULTI_MAX_NOTES):parseInt(opt,10);
   currentNotes=generateNotes(count);
+  scored=false;
   resetUI();
 }
 
@@ -83,7 +86,7 @@ function playExercise(e){
   if(e) pulse(e);
   if(!currentNotes) return;
   stopAllAudio();   // cut off anything still playing before starting
-  playMidiNotes(currentNotes,{dur:2.2,roll:0});
+  playMidiNotes(currentNotes,{dur:2.2,roll:0,instrument:document.getElementById("optInstrument").value});
 }
 
 // Enter moves to the next note; Enter on the last one checks.
@@ -91,6 +94,15 @@ function slotKey(e,i){
   if(e.key!=="Enter") return;
   if(i<11) document.getElementById("slot"+(i+1)).focus();
   else checkAnswers();
+}
+
+// Count each exercise once: the first Check (or Reveal) adds it to the total.
+function updateTally(allCorrect){
+  if(scored) return;
+  scored=true;
+  totalQuestions++;
+  if(allCorrect) totalCorrect++;
+  document.getElementById("tally").textContent=`${totalCorrect} / ${totalQuestions} questions correct`;
 }
 
 function checkAnswers(){
@@ -108,11 +120,13 @@ function checkAnswers(){
   const score=document.getElementById("score");
   score.textContent=`${correct} / 12 correct`;
   score.className="score"+(correct===12?" score-perfect":"");
+  updateTally(correct===12);
 }
 
 // Fill in the right counts and show the exact notes that played.
 function revealAnswers(){
   if(!currentNotes) return;
+  updateTally(false);
   const counts=countByName(currentNotes);
   counts.forEach((ans,i)=>{
     document.getElementById("slot"+i).value=ans;

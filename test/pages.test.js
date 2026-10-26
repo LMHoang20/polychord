@@ -56,7 +56,7 @@ test("modulation: answer checking tolerates enharmonics and quality spellings", 
   for (const s of ["", "Cm", "D", "C7", "Csus4"]) assert.equal(ok(s, C), false, s);
 });
 
-/* ---------- MultiNotes ---------- */
+/* ---------- Multinotes ---------- */
 const multi = () => loadScripts(["theory.js", "audio.js", "multinotes.js"], { fields: { optCount: "random" } });
 
 test("multinotes: generates different notes between C3 and C6", () => {
@@ -84,6 +84,26 @@ test("multinotes: answer checking treats blank as 0", () => {
   assert.equal(ok("1", 2), false);
   assert.equal(ok("", 1), false);
   assert.equal(ok("abc", 0), false);
+});
+
+test("multinotes: tally counts each question once and only full marks as correct", () => {
+  const m = multi();
+  const answer = () => m.data("countByName(currentNotes)").forEach((n, i) => { m.el("slot" + i).value = String(n); });
+  answer();
+  m.get("checkAnswers")();
+  m.get("checkAnswers")();   // checking again must not count twice
+  assert.equal(m.el("tally").textContent, "1 / 1 questions correct");
+  m.get("buildExercise")();
+  m.get("checkAnswers")();   // blank answers: wrong (at least one note always plays)
+  assert.equal(m.el("tally").textContent, "1 / 2 questions correct");
+  m.get("buildExercise")();
+  m.get("revealAnswers")();
+  assert.equal(m.el("tally").textContent, "1 / 3 questions correct");
+});
+
+test("multinotes: every instrument in the box has a sound", () => {
+  const names = multi().data("Object.keys(INSTRUMENTS)");
+  assert.deepEqual(names, ["piano", "guitar", "violin", "horn", "flute"]);
 });
 
 /* ---------- Randomizer ---------- */
