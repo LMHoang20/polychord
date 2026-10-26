@@ -49,7 +49,7 @@ const SAMPLE_GAIN=2.5;   // recordings are normalized to a peak of 1
 const RELEASE=0.45;      // fade-out after a note's duration (s)
 
 const samples={};        // instrument -> {midi: AudioBuffer}, once all have loaded
-const loading=new Set();
+const loading=new Map(); // instrument -> promise, while its recordings download
 let instrument="piano";  // what plays; pages change it with setInstrument()
 
 // Which recording plays a MIDI note, and at what speed.
@@ -59,24 +59,25 @@ function nearestSample(midi){
   return {midi:m,rate:Math.pow(2,(midi-m)/12)};
 }
 
-// "multi" means every note gets a random instrument.
+// "multi" means every note gets a random instrument. Returns a promise that
+// resolves once the recordings are in (or failed, so the synth plays).
 function setInstrument(name){
   instrument=name;
-  (name==="multi"?INSTRUMENTS:[name]).forEach(loadInstrument);
+  return Promise.all((name==="multi"?INSTRUMENTS:[name]).map(loadInstrument));
 }
 
 // Download and decode an instrument's recordings in the background. Until
 // they're all in, its notes play on the synth.
 function loadInstrument(name){
   const Decoder=window.OfflineAudioContext||window.webkitOfflineAudioContext;
-  if(!INSTRUMENTS.includes(name)||samples[name]||loading.has(name)||!Decoder||typeof fetch!=="function") return;
-  loading.add(name);
+  if(loading.has(name)) return loading.get(name);
+  if(!INSTRUMENTS.includes(name)||samples[name]||!Decoder||typeof fetch!=="function") return Promise.resolve();
   // An offline context decodes without needing a click first; the buffers
   // play in the real one.
   const decoder=new Decoder(1,1,44100);
   const notes=[];
   for(let m=SAMPLE_LOW;m<=SAMPLE_HIGH;m+=SAMPLE_STEP) notes.push(m);
-  Promise.all(notes.map(m=>
+  const done=Promise.all(notes.map(m=>
     fetch(`assets/instruments/${name}/${m}.mp3`)
       .then(r=>{ if(!r.ok) throw new Error(`${r.status} ${r.url}`); return r.arrayBuffer(); })
       .then(data=>new Promise((ok,fail)=>decoder.decodeAudioData(data,ok,fail)))
@@ -86,6 +87,8 @@ function loadInstrument(name){
   }).catch(err=>{
     console.warn(`Couldn't load the ${name} recordings, using the synth`,err);
   }).finally(()=>loading.delete(name));
+  loading.set(name,done);
+  return done;
 }
 
 // Scale an instrument's recordings together so the loudest peak is 1, which

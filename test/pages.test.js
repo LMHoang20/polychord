@@ -89,6 +89,12 @@ test("modulation: tally counts each question once and only full marks as correct
   assert.equal(m.el("tally").textContent, "1 / 3 questions correct");
 });
 
+test("modulation: changing the instrument returns a promise that settles", async () => {
+  const m = mod();
+  await m.get("setInstrument")("organ");
+  assert.equal(m.data("instrument"), "organ");
+});
+
 /* ---------- Multinotes ---------- */
 const multi = () => loadScripts(["theory.js", "audio.js", "multinotes.js"], { fields: { optCount: "random" } });
 

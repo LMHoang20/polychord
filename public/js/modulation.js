@@ -184,16 +184,25 @@ function playExercise(e){
   if(e) pulse(e);
   if(!currentExercise) return;
   stopAllAudio();   // cut off anything still playing before starting
-  const dur=parseFloat(document.getElementById("optTempo").value)||0.85;
-  playChordSequence(currentExercise.chords.map(chordMidi),{chordDur:dur,melody:currentExercise.chords.map(c=>c.melody)});
+  getCtx();         // start audio now, while the click still counts
+  // Wait for the chosen instrument's recordings, so a just-changed choice is heard right away.
+  setInstrument(document.getElementById("optInstrument").value).then(()=>{
+    stopAllAudio();
+    const dur=parseFloat(document.getElementById("optTempo").value)||0.85;
+    playChordSequence(currentExercise.chords.map(chordMidi),{chordDur:dur,melody:currentExercise.chords.map(c=>c.melody)});
+  });
 }
 
 function playSlot(i,e){
   if(e) pulse(e);
   if(!currentExercise) return;
   stopAllAudio();   // interrupt the progression (or another slot) first
-  const c=currentExercise.chords[i];
-  playMidiNotes(chordMidi(c).concat(c.melody||[]),{dur:0.95,roll:0.02});
+  getCtx();
+  setInstrument(document.getElementById("optInstrument").value).then(()=>{
+    stopAllAudio();
+    const c=currentExercise.chords[i];
+    playMidiNotes(chordMidi(c).concat(c.melody||[]),{dur:0.95,roll:0.02});
+  });
 }
 
 // Enter moves to the next slot; Enter on the last slot checks.
