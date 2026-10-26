@@ -38,35 +38,64 @@ function stopAllAudio(){
 
 function midiToFreq(m){ return 440*Math.pow(2,(m-69)/12); }
 
-// Oscillator recipes per instrument: two wave types, attack (s), and how much
-// of the level is left at the end of the note (1 = held, lower = plucked).
+// Instrument recipes: harmonic strengths for two oscillators (first entry =
+// fundamental), attack (s), how much level is left at the end of the note
+// (1 = held, lower = plucked), how bright the note starts (filter cutoff as a
+// multiple of the pitch; it closes as the note fades, like a real string),
+// and vibrato depth in cents.
 const INSTRUMENTS={
-  piano:  {a:"triangle",b:"sine",    attack:0.005,sustain:0.2},
-  guitar: {a:"sawtooth",b:"triangle",attack:0.005,sustain:0.15},
-  violin: {a:"sawtooth",b:"sawtooth",attack:0.09, sustain:1},
-  horn:   {a:"sawtooth",b:"sine",    attack:0.06, sustain:1},
-  flute:  {a:"sine",    b:"triangle",attack:0.05, sustain:1}
+  piano:  {a:[1,0.6,0.35,0.2,0.12,0.08,0.05,0.03],b:[1,0.1],attack:0.004,sustain:0.1, bright:14,vib:0},
+  guitar: {a:[1,0.8,0.5,0.3,0.2,0.1,0.06,0.04],   b:[1,0.3],attack:0.004,sustain:0.08,bright:9, vib:0},
+  violin: {a:[1,0.7,0.6,0.5,0.4,0.3,0.2,0.15,0.1,0.06],b:[1,0.5,0.3],attack:0.09,sustain:1,bright:7,vib:12},
+  horn:   {a:[1,0.8,0.5,0.35,0.2,0.12,0.07],      b:[1,0.3],attack:0.06,sustain:1,   bright:5, vib:5},
+  flute:  {a:[1,0.25,0.1,0.04],                   b:[1,0.05],attack:0.05,sustain:1,  bright:4, vib:8}
 };
+
+// Build (and cache) a wave from a list of harmonic strengths.
+const waveCache=new Map();
+function harmonicWave(ctx,partials){
+  let w=waveCache.get(partials);
+  if(!w||w.ctx!==ctx){
+    const real=new Float32Array(partials.length+1), imag=new Float32Array(partials.length+1);
+    partials.forEach((p,i)=>{ imag[i+1]=p; });
+    w={ctx,wave:ctx.createPeriodicWave(real,imag)};
+    waveCache.set(partials,w);
+  }
+  return w.wave;
+}
 
 function playVoice(ctx,freq,start,dur,level,dest,instrument){
   const ins=INSTRUMENTS[instrument]||INSTRUMENTS.piano;
   const osc=ctx.createOscillator();
   const osc2=ctx.createOscillator();
   const gain=ctx.createGain();
-  osc.type=ins.a;
-  osc2.type=ins.b;
+  const tone=ctx.createBiquadFilter();
+  osc.setPeriodicWave(harmonicWave(ctx,ins.a));
+  osc2.setPeriodicWave(harmonicWave(ctx,ins.b));
   osc.frequency.value=freq;
   osc2.frequency.value=freq;
   osc2.detune.value=4;               // subtle warmth
   const attack=ins.attack, release=0.45;
+  tone.type="lowpass";
+  tone.frequency.setValueAtTime(Math.min(freq*ins.bright,12000),start);
+  tone.frequency.exponentialRampToValueAtTime(Math.max(freq*2,200),start+dur+release);
   gain.gain.setValueAtTime(0.0001,start);
   gain.gain.exponentialRampToValueAtTime(level,start+attack);
   gain.gain.exponentialRampToValueAtTime(level*ins.sustain,start+dur);
   gain.gain.exponentialRampToValueAtTime(0.0001,start+dur+release);
-  osc.connect(gain); osc2.connect(gain); gain.connect(dest);
+  osc.connect(gain); osc2.connect(gain); gain.connect(tone); tone.connect(dest);
   osc.start(start); osc2.start(start);
   const stop=start+dur+release+0.05;
   osc.stop(stop); osc2.stop(stop);
+
+  if(ins.vib){                       // gentle vibrato for bowed / blown sounds
+    const lfo=ctx.createOscillator();
+    const depth=ctx.createGain();
+    lfo.frequency.value=5.2;
+    depth.gain.value=ins.vib;
+    lfo.connect(depth); depth.connect(osc.detune); depth.connect(osc2.detune);
+    lfo.start(start+attack); lfo.stop(stop);
+  }
 
   // track so stopAllAudio() can cut it short; self-remove when it finishes
   const voice={osc,osc2,gain};
@@ -129,7 +158,7 @@ function playChordSequence(chordsMidi,opts){
     const level=Math.min(0.16,0.5/midi.length);
     midi.forEach((m,j)=>playVoice(ctx,midiToFreq(m),t+j*roll,chordDur,level,master));
     const tune=opts.melody&&opts.melody[idx];
-    if(tune) tune.forEach((m,j)=>playVoice(ctx,midiToFreq(m),t+j*chordDur/tune.length,chordDur/tune.length,0.14,master));
+    if(tune) tune.forEach((m,j)=>playVoice(ctx,midiToFreq(m),t+j*chordDur/tune.length,chordDur/tune.length,0.14,master,"flute"));
     t+=chordDur+gap;
   });
   return t-(ctx.currentTime);
