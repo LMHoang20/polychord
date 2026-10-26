@@ -44,7 +44,7 @@ function midiToFreq(m){ return 440*Math.pow(2,(m-69)/12); }
 // multiple of the pitch; it closes as the note fades, like a real string),
 // and vibrato depth in cents.
 const INSTRUMENTS={
-  piano:  {a:[1,0.6,0.35,0.2,0.12,0.08,0.05,0.03],b:[1,0.1],attack:0.004,sustain:0.1, bright:14,vib:0},
+  piano:  {a:[1,0.7,0.45,0.3,0.2,0.14,0.1,0.07,0.05,0.03],b:[1,0.35,0.12],attack:0.003,sustain:0.04,bright:16,vib:0,detune:7},
   guitar: {a:[1,0.8,0.5,0.3,0.2,0.1,0.06,0.04],   b:[1,0.3],attack:0.004,sustain:0.08,bright:9, vib:0},
   violin: {a:[1,0.7,0.6,0.5,0.4,0.3,0.2,0.15,0.1,0.06],b:[1,0.5,0.3],attack:0.09,sustain:1,bright:7,vib:12},
   horn:   {a:[1,0.8,0.5,0.35,0.2,0.12,0.07],      b:[1,0.3],attack:0.06,sustain:1,   bright:5, vib:5},
@@ -74,7 +74,7 @@ function playVoice(ctx,freq,start,dur,level,dest,instrument){
   osc2.setPeriodicWave(harmonicWave(ctx,ins.b));
   osc.frequency.value=freq;
   osc2.frequency.value=freq;
-  osc2.detune.value=4;               // subtle warmth
+  osc2.detune.value=ins.detune||4;   // subtle warmth (wider = richer)
   const attack=ins.attack, release=0.45;
   tone.type="lowpass";
   tone.frequency.setValueAtTime(Math.min(freq*ins.bright,12000),start);
@@ -110,7 +110,7 @@ function playMidiNotes(midiNotes,opts){
   const master=ctx.createGain();
   const filter=ctx.createBiquadFilter();
   filter.type="lowpass";
-  filter.frequency.value=4200;
+  filter.frequency.value=6500;
   master.gain.value=0.85;
   master.connect(filter);
   filter.connect(ctx.destination);
@@ -144,7 +144,7 @@ function playChordSequence(chordsMidi,opts){
   const master=ctx.createGain();
   const filter=ctx.createBiquadFilter();
   filter.type="lowpass";
-  filter.frequency.value=4200;
+  filter.frequency.value=6500;
   master.gain.value=0.85;
   master.connect(filter);
   filter.connect(ctx.destination);
