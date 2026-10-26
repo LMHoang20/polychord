@@ -158,7 +158,7 @@ function playChordSequence(chordsMidi,opts){
     const level=Math.min(0.16,0.5/midi.length);
     midi.forEach((m,j)=>playVoice(ctx,midiToFreq(m),t+j*roll,chordDur,level,master));
     const tune=opts.melody&&opts.melody[idx];
-    if(tune) tune.forEach((m,j)=>playVoice(ctx,midiToFreq(m),t+j*chordDur/tune.length,chordDur/tune.length,0.14,master,"flute"));
+    if(tune) tune.forEach((m,j)=>playVoice(ctx,midiToFreq(m),t+j*chordDur/tune.length,chordDur/tune.length,0.14,master));
     t+=chordDur+gap;
   });
   return t-(ctx.currentTime);
