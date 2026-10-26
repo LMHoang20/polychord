@@ -6,8 +6,8 @@
    + audio.js (playChordSequence, playMidiNotes, pulse).
    ============================================================ */
 
-const PROG_BASE_MIDI=36;                 // MIDI of C for the progression register (C2)
-const MELODY_LOW=67, MELODY_HIGH=86;     // melody register (G4..D6)
+const PROG_BASE_MIDI=48;                 // MIDI of C for the progression register (C3)
+const MELODY_LOW=72, MELODY_HIGH=88;     // melody register (C5..E6)
 const MELODY_NOTES=2;                    // melody notes per chord
 
 // Major-key diatonic chords:  I   ii   iii  IV   V7  vi   vii°  (V is a dominant 7th)
@@ -56,7 +56,7 @@ function chordMidi(c){
 
 // Give each chord a short melody made only of its own notes.
 function addMelody(chords){
-  let prev=76;
+  let prev=79;
   chords.forEach(c=>{
     const pcs=chordMidi(c).map(m=>m%12);
     const cands=[];

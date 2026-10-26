@@ -44,7 +44,7 @@ function midiToFreq(m){ return 440*Math.pow(2,(m-69)/12); }
 // multiple of the pitch; it closes as the note fades, like a real string),
 // and vibrato depth in cents.
 const INSTRUMENTS={
-  piano:  {a:[1,0.7,0.45,0.3,0.2,0.14,0.1,0.07,0.05,0.03],b:[1,0.35,0.12],attack:0.003,sustain:0.04,bright:16,vib:0,detune:7},
+  piano:  {a:[1,0.5,0.25,0.12,0.06,0.03],b:[1,0.2],attack:0.005,sustain:0.12,bright:7,vib:0,detune:3},
   guitar: {a:[1,0.8,0.5,0.3,0.2,0.1,0.06,0.04],   b:[1,0.3],attack:0.004,sustain:0.08,bright:9, vib:0},
   violin: {a:[1,0.7,0.6,0.5,0.4,0.3,0.2,0.15,0.1,0.06],b:[1,0.5,0.3],attack:0.09,sustain:1,bright:7,vib:12},
   horn:   {a:[1,0.8,0.5,0.35,0.2,0.12,0.07],      b:[1,0.3],attack:0.06,sustain:1,   bright:5, vib:5},
