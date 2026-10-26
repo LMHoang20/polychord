@@ -66,12 +66,19 @@
       </div>
       <div>
         <label>Instrument</label>
-        <select id="optInstrument">
+        <select id="optInstrument" onchange="setInstrument(this.value)">
           <option value="piano">Piano</option>
-          <option value="guitar">Guitar</option>
+          <option value="harpsichord">Harpsichord</option>
+          <option value="organ">Organ</option>
+          <option value="harp">Harp</option>
+          <option value="guitar">Classical guitar</option>
+          <option value="strings">Strings</option>
           <option value="violin">Violin</option>
-          <option value="horn">Horn</option>
+          <option value="cello">Cello</option>
           <option value="flute">Flute</option>
+          <option value="oboe">Oboe</option>
+          <option value="clarinet">Clarinet</option>
+          <option value="horn">French horn</option>
           <option value="multi">Multi-Instruments</option>
         </select>
       </div>

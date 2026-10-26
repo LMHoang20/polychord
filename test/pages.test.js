@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { existsSync, readFileSync } from "node:fs";
 import { loadScripts } from "./load.js";
 
 /* ---------- Polychord ---------- */
@@ -133,9 +134,39 @@ test("multinotes: tally counts each question once and only full marks as correct
   assert.equal(m.el("tally").textContent, "1 / 3 questions correct");
 });
 
-test("multinotes: every instrument in the box has a sound", () => {
-  const names = multi().data("Object.keys(INSTRUMENTS)");
-  assert.deepEqual(names, ["piano", "guitar", "violin", "horn", "flute"]);
+/* ---------- Instruments (audio.js) ---------- */
+const audio = () => loadScripts(["theory.js", "audio.js"]);
+const publicFile = path => new URL(`../public/${path}`, import.meta.url);
+
+test("instruments: every page's picker lists exactly the instruments audio.js has", () => {
+  const names = audio().data("INSTRUMENTS");
+  for (const [page, extra] of [["polychord.html", []], ["modulation.html", []], ["multinotes.html", ["multi"]]]) {
+    const select = /<select id="optInstrument"[^>]*>([\s\S]*?)<\/select>/.exec(readFileSync(publicFile(page), "utf8"));
+    assert.ok(select, `${page} has an instrument picker`);
+    const values = [...select[1].matchAll(/<option value="([^"]+)"/g)].map(m => m[1]);
+    assert.deepEqual(values, [...names, ...extra], page);
+  }
+});
+
+test("instruments: every instrument has all its recordings", () => {
+  const a = audio();
+  const [low, high, step] = a.data("[SAMPLE_LOW,SAMPLE_HIGH,SAMPLE_STEP]");
+  for (const name of a.data("INSTRUMENTS")) {
+    for (let m = low; m <= high; m += step) {
+      assert.ok(existsSync(publicFile(`assets/instruments/${name}/${m}.mp3`)), `${name}/${m}.mp3`);
+    }
+  }
+});
+
+test("instruments: each note plays the nearest recording at the right speed", () => {
+  const near = m => audio().data(`nearestSample(${m})`);
+  assert.deepEqual(near(60), { midi: 60, rate: 1 });                 // recorded
+  assert.equal(near(61).midi, 60);                                    // one up: speed up
+  assert.ok(Math.abs(near(61).rate - 2 ** (1 / 12)) < 1e-12);
+  assert.equal(near(62).midi, 63);                                    // one down: slow down
+  assert.ok(Math.abs(near(62).rate - 2 ** (-1 / 12)) < 1e-12);
+  assert.equal(near(20).midi, 36);                                    // below the range
+  assert.equal(near(110).midi, 96);                                   // above the range
 });
 
 /* ---------- Randomizer ---------- */

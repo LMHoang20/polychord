@@ -57,6 +57,10 @@ function run(cmd, args, { cwd, env = process.env, uid, gid, input = "", timeoutM
     }, timeoutMs);
     child.on("error", reject);
     child.on("close", code => { clearTimeout(timer); resolve({ code, stdout, stderr }); });
+    // A child that exits without reading stdin (git often does) makes this
+    // write fail with EPIPE, which would otherwise crash the bot. Its exit
+    // code already says how it went.
+    child.stdin.on("error", () => {});
     child.stdin.end(input);
   });
 }
