@@ -86,7 +86,7 @@ function playExercise(e){
   if(e) pulse(e);
   if(!currentNotes) return;
   stopAllAudio();   // cut off anything still playing before starting
-  playMidiNotes(currentNotes,{dur:2.2,roll:0,instrument:document.getElementById("optInstrument").value});
+  playMidiNotes(currentNotes,{dur:2.2,roll:0});
 }
 
 // Enter moves to the next note; Enter on the last one checks.

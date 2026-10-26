@@ -1,0 +1,25 @@
+Instrument recordings
+
+The MP3s in this folder come from the Fluid R3 GM soundfont by Frank Wen,
+as pre-rendered by Benjamin Gleitzman in midi-js-soundfonts:
+https://github.com/gleitz/midi-js-soundfonts (FluidR3_GM)
+
+They are licensed under Creative Commons Attribution 3.0:
+https://creativecommons.org/licenses/by/3.0/
+
+TonyPoly uses a subset (one note every 3 semitones from C2 to C7), renamed by
+MIDI note number. The recordings themselves are unchanged.
+
+Folder          Soundfont instrument
+piano           acoustic_grand_piano
+harpsichord     harpsichord
+organ           church_organ
+harp            orchestral_harp
+guitar          acoustic_guitar_nylon
+strings         string_ensemble_1
+violin          violin
+cello           cello
+flute           flute
+oboe            oboe
+clarinet        clarinet
+horn            french_horn

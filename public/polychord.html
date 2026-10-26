@@ -52,6 +52,25 @@
     <section class="panel">
       <h2>Polychord Input</h2>
       <p class="hint">Two chords (e.g. C, Dm, G7, Fmaj7). Press ▶ to hear each — or both stacked.</p>
+      <div class="mod-options">
+        <div>
+          <label>Instrument</label>
+          <select id="optInstrument" onchange="setInstrument(this.value)">
+            <option value="piano">Piano</option>
+            <option value="harpsichord">Harpsichord</option>
+            <option value="organ">Organ</option>
+            <option value="harp">Harp</option>
+            <option value="guitar">Classical guitar</option>
+            <option value="strings">Strings</option>
+            <option value="violin">Violin</option>
+            <option value="cello">Cello</option>
+            <option value="flute">Flute</option>
+            <option value="oboe">Oboe</option>
+            <option value="clarinet">Clarinet</option>
+            <option value="horn">French horn</option>
+          </select>
+        </div>
+      </div>
       <div class="chord-grid">
         <div>
           <label>Lower Chord</label>
