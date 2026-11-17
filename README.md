@@ -8,6 +8,35 @@ A free, browser-based playground for jazz harmony. No accounts, no tracking, no 
 | **Modulation** | Ear training for key changes. Generates a diatonic progression (8 chords for 2 keys, 16 for 3) that moves through 2–3 keys, optionally with a melody of chord tones, plays it, and grades your transcription. Enharmonic spellings and common quality spellings are accepted. |
 | **Randomizer** | Random practice prompts (notes, scales, frets, or any custom list). The setup lives in the URL, so you can bookmark or share it. |
 
+## TonyMony (sister site)
+
+`tonymony/` is a second site, deployed as its own Vercel project: a checker and helper for 4-part SATB harmony. Same approach: plain HTML, CSS and JavaScript, no build step.
+
+| Section | What it does |
+| --- | --- |
+| **Check my work** | Write S/A on the treble staff and T/B on the bass staff (any key, scale, time signature, note values, rests, accidentals), put Roman numerals under the chords, and every broken rule is marked live: parallel/contrary 5ths and octaves, direct 5ths/octaves, missing or wrong chord tones, wrong bass for the inversion, bad doublings, spacing (S–A and A–T within an octave, T–B within two), crossing, overlap, augmented melodic intervals, cross relations, unresolved tendency tones, ranges and rhythm. |
+| **Harmonize for me** | Give a melody or a bass and the chords (or leave some blank), and get several different correct 4-part realizations to compare, play back or open in the checker. |
+
+Roman numerals cover triads and sevenths with figures (6, 64, 7, 65, 43, 42), °/ø/+, mixture (bVI, iv), secondary chords (V65/V, vii°7/ii), N6, It+6, Fr+6, Ger+6 and Cad64, in major, natural/harmonic/melodic minor, harmonic major and the church modes.
+
+```
+tonymony/
+  vercel.json      its own hosting config (output dir public/, CSP)
+  public/
+    index.html     the whole app (two tabs, light/dark)
+    js/theory.js   spelled pitches, intervals, keys, scales, Roman numerals (no DOM)
+    js/score.js    score model and timing (no DOM)
+    js/checker.js  the voice-leading rules (no DOM)
+    js/harmonizer.js  voicing search (no DOM)
+    js/render.js   SVG engraving with the Bravura music font
+    js/editor.js   the clickable staff, toolbar and keyboard input
+    js/audio.js    piano playback
+    js/app.js      page wiring
+  test/            node:test suites (run by npm test)
+```
+
+Run it with `npm run dev:mony`, or `python3 -m http.server -d tonymony/public 8000`.
+
 ## Running locally
 
 Any static file server works. The site lives in `public/`:
@@ -58,6 +87,8 @@ vercel --prod   # production
 ```
 
 Connecting the GitHub repo to the Vercel project gives a preview deploy for every pull request and a production deploy from `main`.
+
+TonyMony is a second Vercel project on the same repo. In Vercel, choose **Add New → Project**, import this repository again, set **Root Directory** to `tonymony` and **Framework Preset** to *Other*, and leave the build and install commands empty. Its `tonymony/vercel.json` does the rest. The root `.vercelignore` keeps `tonymony/` out of TonyPoly's deploys. From the CLI: `cd tonymony && vercel --prod`.
 
 ## Issue bot
 
