@@ -178,8 +178,14 @@ function parseSingleNumeral(s, key) {
   if (/^[°ø+]/.test(rest)) { sym = rest[0]; rest = rest.slice(1); }
   if (rest[0] === "M") { majSeventh = true; rest = rest.slice(1); }
   if (rest.startsWith("+6")) return { error: `+6 goes with It, Fr or Ger` };
-  if (!(rest in FIGURES)) return { error: `"${rest}" isn't a figure I know (try 6, 64, 7, 65, 43, 42)` };
-  [inversion, seventh] = FIGURES[rest];
+  // Extensions: 9, 11, 13, or 7 with alterations (V9, V13, V7#11, V7b9#5).
+  const ext = rest.match(/^(9|11|13|7(?=[b#]))((?:[b#](?:5|9|11|13))*)$/);
+  if (ext) {
+    seventh = true;
+  } else {
+    if (!(rest in FIGURES)) return { error: `"${rest}" isn't a figure I know (try 6, 64, 7, 65, 43, 42, 9, 11, 13)` };
+    [inversion, seventh] = FIGURES[rest];
+  }
   if (majSeventh || sym === "ø") seventh = true;
 
   if (upper) {
@@ -199,7 +205,7 @@ function parseSingleNumeral(s, key) {
   const rootPc = pcOf(root);
   const triad = TRIAD_SEMIS[quality];
 
-  let sev = null;
+  let sev = null, extName = "";
   if (seventh) {
     if (sym === "°") sev = 9;
     else if (sym === "ø") sev = 10;
@@ -211,6 +217,24 @@ function parseSingleNumeral(s, key) {
     Object.assign(spell(root.l + 4, rootPc + triad[1]), { role: "5" })];
   if (sev !== null) tones.push(Object.assign(spell(root.l + 6, rootPc + sev), { role: "7" }));
 
+  // Extension tones. A 13th chord leaves out the 11th unless it is written (#11).
+  if (ext) {
+    const alts = {};
+    for (const [, a, n] of ext[2].matchAll(/([b#])(\d+)/g)) alts[n] = a === "b" ? -1 : 1;
+    const top = ext[1];
+    const want = new Set(Object.keys(alts));
+    if (top !== "7") want.add("9");
+    if (top === "11") want.add("11");
+    if (top === "13") want.add("13");
+    if (alts[5]) tones[2] = Object.assign(spell(root.l + 4, rootPc + triad[1] + alts[5]), { role: "5" });
+    // [letter steps above the root, semitones] for each natural extension
+    const EXT = { "9": [8, 2], "11": [10, 5], "13": [12, 9] };
+    ["9", "11", "13"].forEach(n => {
+      if (want.has(n)) tones.push(Object.assign(spell(root.l + EXT[n][0], rootPc + EXT[n][1] + (alts[n] || 0)), { role: n }));
+    });
+    extName = top + ext[2];
+  }
+
   // Leading tone: the 3rd of V, the root of vii (in the key, or the secondary key).
   const lt = degreeNote(key, 6, 11);
   const dominant = (deg === 4 && quality === "M" && !acc) || (deg === 6 && quality === "d" && !acc);
@@ -218,8 +242,8 @@ function parseSingleNumeral(s, key) {
 
   return {
     kind: "tertian", key, degree: deg, quality, seventh: sev !== null, inversion,
-    tones, bassRole: INVERSION_ROLE[inversion], dominant,
-    name: pcName(root) + chordSuffix(quality, sev),
+    tones, bassRole: INVERSION_ROLE[inversion], dominant, extended: !!ext,
+    name: pcName(root) + (ext ? chordSuffix(quality, sev).replace(/7$/, "") + extName : chordSuffix(quality, sev)),
   };
 }
 
@@ -252,6 +276,8 @@ function parseNumeral(text, key) {
   return c;
 }
 
+// With four voices an extended chord can't sound every tone: only the root, 3rd and 7th must be there.
+function toneRequired(chord, role) { return !chord.extended || role === "1" || role === "3" || role === "7"; }
 function chordPcs(chord) { return chord.tones.map(pcOf); }
 function chordToneList(chord) { return chord.tones.map(pcName).join(" "); }
 function findTone(chord, p) { return chord.tones.find(t => samePc(t, p)) || null; }

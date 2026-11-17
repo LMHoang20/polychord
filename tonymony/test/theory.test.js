@@ -45,6 +45,21 @@ test("Roman numerals in major: triads, inversions and sevenths", () => {
   assert.equal(tones("viio7"), "B D F A♭ / bass 1");  // typed "o" for °
 });
 
+test("Roman numerals: extensions and alterations", () => {
+  assert.equal(tones("V9"), "G B D F A / bass 1");
+  assert.equal(tones("V13"), "G B D F A E / bass 1");
+  assert.equal(tones("V7#11"), "G B D F C♯ / bass 1");
+  assert.equal(tones("V7b9"), "G B D F A♭ / bass 1");
+  assert.equal(tones("V7#5"), "G B D♯ F / bass 1");
+  assert.equal(tones("IV11"), "F A C E G B♭ / bass 1");
+  assert.equal(tones("V+"), "G B D♯ / bass 1");
+  assert.equal(tones("vii°"), "B D F / bass 1");
+  const name = n => t.get(`parseNumeral(${JSON.stringify(n)}, { tonic: parseNote("C"), scale: "major" }).name`);
+  assert.equal(name("V7#11"), "G7#11");
+  assert.equal(name("IVM9"), "Fmaj9");
+  assert.equal(name("ii9"), "Dm9");
+});
+
 test("Roman numerals: chromatic chords", () => {
   assert.equal(tones("N6"), "D♭ F A♭ / bass 3");
   assert.equal(tones("It+6"), "A♭ C F♯ / bass b6");
@@ -71,7 +86,7 @@ test("Roman numerals in minor keys use the leading tone where it belongs", () =>
 
 test("bad numerals give a readable error", () => {
   assert.match(tones("X"), /ERROR/);
-  assert.match(tones("V9"), /ERROR.*figure/);
+  assert.match(tones("V8"), /ERROR.*figure/);
   assert.match(tones("VII°"), /ERROR.*lowercase/);
   assert.match(tones("V/vii°"), /ERROR.*major or minor/);
 });

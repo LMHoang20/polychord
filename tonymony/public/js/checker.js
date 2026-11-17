@@ -136,7 +136,7 @@ function checkChord(s, chord, add, mark) {
   const all = VOICES.map(mark);
 
   chord.tones.forEach(t => {
-    if (count(t.role) > 0) return;
+    if (count(t.role) > 0 || !toneRequired(chord, t.role)) return;
     if (t.role === "5" && chord.kind === "tertian") {
       if (count("1") < 2) add("warn", "missing", s.tick, `${label} leaves out the 5th (${pcName(t)}). That's fine only when the root is doubled.`, all);
       return;
@@ -235,7 +235,11 @@ function checkMotion(p, s, prevChord, chord, add) {
     const t = findTone(prevChord, a);
     if (!t) return;
     const d = noteMidi(b) - noteMidi(a), steps = noteStep(b) - noteStep(a);
-    if (t.role === "7" && !(steps === -1 || d === 0)) {
+    if (prevChord.extended && t.role === "7" && !(steps === -1 && d === -2)) {
+      add("warn", "resolution", s.tick, `${vn(v)}: the 7th of ${p.numeral.text} (${nn(a)}) should resolve down a whole step.`, marks([v]));
+    } else if (prevChord.extended && t.role === "3" && !(steps === 1 && d === 1)) {
+      add("warn", "resolution", s.tick, `${vn(v)}: the 3rd of ${p.numeral.text} (${nn(a)}) should resolve up a half step.`, marks([v]));
+    } else if (t.role === "7" && !(steps === -1 || d === 0)) {
       add("warn", "resolution", s.tick, `${vn(v)}: the 7th of ${p.numeral.text} (${nn(a)}) should resolve down by step.`, marks([v]));
     } else if (t.lt && (v === "S" || v === "B") && findTone(chord, tonic) && !(steps === 1 && samePc(b, tonic))) {
       add("warn", "resolution", s.tick, `${vn(v)}: the leading tone ${nn(a)} should rise to ${pcName(tonic)}.`, marks([v]));

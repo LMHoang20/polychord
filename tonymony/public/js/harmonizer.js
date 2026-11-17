@@ -52,7 +52,7 @@ function staticCost(chord, notes, given) {
   const count = r => tones.filter(t => t && t.role === r).length;
   let cost = 0;
   for (const t of chord.tones) {
-    if (count(t.role)) continue;
+    if (count(t.role) || !toneRequired(chord, t.role)) continue;
     if (t.role === "5" && chord.kind === "tertian" && count("1") >= 2) cost += chord.seventh ? 2 : 3;
     else return HARD * 2;
   }
@@ -153,7 +153,9 @@ function transitionCost(p, q, given) {
       const t = findTone(pc, p.notes[i]);
       if (!t) continue;
       const steps = q.step[i] - p.step[i];
-      if (t.role === "7" && !(steps === -1 || d[i] === 0)) cost += 8;
+      if (pc.extended && t.role === "7" && !(steps === -1 && d[i] === -2)) cost += 8;
+      else if (pc.extended && t.role === "3" && !(steps === 1 && d[i] === 1)) cost += 8;
+      else if (t.role === "7" && !(steps === -1 || d[i] === 0)) cost += 8;
       else if (t.lt && (i === 0 || i === 3) && findTone(qc, tonic) && !(steps === 1 && samePc(q.notes[i], tonic))) cost += 8;
       else if (t.role === "b6" && d[i] !== -1) cost += 8;
       else if (t.role === "#4" && d[i] !== 1) cost += 8;
