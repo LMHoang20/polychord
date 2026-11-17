@@ -140,6 +140,7 @@ select:focus, input:focus, button:focus-visible, .ed-staff:focus-visible, .issue
 .tool.on { background: var(--accent); color: var(--accent-ink); }
 .tool:disabled { opacity: .35; cursor: default; background: none; }
 .tool.smufl { font-family: "Bravura", serif; font-size: 26px; line-height: 1; padding-top: 2px; }
+.tool.dot { font-size: 26px; line-height: 1; }
 .tool.smufl.acc { font-size: 24px; padding-top: 6px; }
 .tool.voice span { font-weight: 500; font-size: 13px; }
 .tool.voice:not(.on) span { color: var(--muted); }
@@ -234,6 +235,25 @@ details li { margin-bottom: 4px; }
 .answer-actions { margin-left: auto; display: flex; gap: 8px; }
 .answer-score { line-height: 0; overflow: hidden; }
 .answer .issues { margin-top: 8px; }
+
+/* ---------- Language picker and Donate ---------- */
+.nav-donate { color: var(--accent); font: 600 14px "Inter", sans-serif; text-decoration: none; }
+.brand + .nav-donate { margin-right: auto; }
+.lang-select {
+  border: 1px solid var(--border); background: var(--panel); color: var(--ink);
+  font: 600 13px "Inter", sans-serif; padding: 8px 10px; border-radius: 10px;
+}
+.donate-panel { display: flex; gap: 28px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.qr-frame { background: #fff; border: 3px solid var(--accent); border-radius: 18px; padding: 16px; line-height: 0; flex: 0 0 auto; }
+.qr-frame[hidden] { display: none; }
+.qr-frame img { display: block; width: 240px; height: 240px; }
+.donate-info { flex: 1; min-width: 240px; }
+.kv { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+.kv:last-child { border-bottom: 0; }
+.kv .k { color: var(--muted); font-size: 14px; }
+.kv .v { font-weight: 600; text-align: right; }
+.acct { font-family: "Space Grotesk", monospace; font-size: 16px; letter-spacing: .04em; background: var(--accent-soft); padding: 3px 10px; border-radius: 8px; }
+.donate-info .btn { margin: 14px 0; }
 
 .foot { max-width: 1120px; margin: 0 auto; padding: 0 16px 40px; font-size: 13px; color: var(--muted); }
 

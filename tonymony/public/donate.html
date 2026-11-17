@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Support TonyMony and help keep this SATB harmony tool free.">
+<meta name="theme-color" content="#f6f4ef">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<title>Support · TonyMony</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<script>
+  try {
+    var t = localStorage.getItem("tm-theme");
+    document.documentElement.dataset.theme = t || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  } catch (e) { document.documentElement.dataset.theme = "light"; }
+</script>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="./">
+      <span class="brand-logo" aria-hidden="true">𝄞</span>
+      <span class="brand-name">Tony<b>Mony</b></span>
+    </a>
+    <a class="nav-donate" href="./" data-i18n="back">← Back to TonyMony</a>
+  </div>
+</nav>
+
+<main class="app">
+  <header class="intro">
+    <h1 data-i18n="donateTitle">Support TonyMony</h1>
+    <p data-i18n="donateSub">If these tools help your harmony studies, you can chip in to keep them free and growing. Thank you! 🙏</p>
+  </header>
+
+  <section class="card donate-panel">
+    <div class="qr-frame" id="qrFrame">
+      <img src="assets/donate-qr.png" width="240" height="240" onerror="document.getElementById('qrFrame').hidden=true"
+           alt="VietQR bank-transfer code — ACB, NGUYEN SONG TOAN, account 16002667">
+    </div>
+    <div class="donate-info">
+      <h2 data-i18n="scan">Scan to donate</h2>
+      <p class="muted" data-i18n="scanHint">Open any Vietnamese banking app (VietQR / napas 247), scan the code, and the transfer fills in automatically — or send manually:</p>
+      <div class="bank-rows">
+        <div class="kv"><span class="k" data-i18n="bank">Bank</span><span class="v">ACB · Asia Commercial Bank</span></div>
+        <div class="kv"><span class="k" data-i18n="acctName">Account name</span><span class="v">NGUYEN SONG TOAN</span></div>
+        <div class="kv"><span class="k" data-i18n="acctNo">Account number</span><span class="v"><code id="acctNo" class="acct">16002667</code></span></div>
+      </div>
+      <button type="button" class="btn primary" id="copyBtn" data-i18n="copy">Copy account number</button>
+      <p class="muted"><span data-i18n="feedback">Feedback? Email</span> <a href="mailto:ntony0783@gmail.com">ntony0783@gmail.com</a></p>
+    </div>
+  </section>
+</main>
+
+<script src="js/donate.js"></script>
+<script src="js/i18n.js"></script>
+</body>
+</html>

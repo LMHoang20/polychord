@@ -29,9 +29,10 @@
       <span class="brand-name">Tony<b>Mony</b></span>
     </a>
     <div class="tabs" role="tablist" aria-label="Sections">
-      <button type="button" role="tab" id="tab-check" data-tab="check" aria-controls="panel-check">Check my work</button>
-      <button type="button" role="tab" id="tab-harmonize" data-tab="harmonize" aria-controls="panel-harmonize">Harmonize for me</button>
+      <button type="button" role="tab" id="tab-check" data-tab="check" aria-controls="panel-check" data-i18n="tabCheck">Check my work</button>
+      <button type="button" role="tab" id="tab-harmonize" data-tab="harmonize" aria-controls="panel-harmonize" data-i18n="tabHarm">Harmonize for me</button>
     </div>
+    <a class="nav-donate" href="donate.html" data-i18n="donate">♥ Donate</a>
     <button type="button" id="themeBtn" class="theme-btn">☾ Dark</button>
   </div>
 </nav>
@@ -40,18 +41,18 @@
 
   <section id="panel-check" role="tabpanel" aria-labelledby="tab-check" hidden>
     <header class="intro">
-      <h1>Check my 4-part harmony</h1>
-      <p>Write Soprano and Alto on the treble staff and Tenor and Bass on the bass staff, add a Roman numeral under each chord, and TonyMony marks every broken rule as you go.</p>
+      <h1 data-i18n="checkTitle">Check my 4-part harmony</h1>
+      <p data-i18n="checkIntro">Write Soprano and Alto on the treble staff and Tenor and Bass on the bass staff, add a Roman numeral under each chord, and TonyMony marks every broken rule as you go.</p>
     </header>
 
     <div class="card">
       <div id="checkEditor"></div>
       <div class="bar">
         <button type="button" id="checkPlay" class="btn play">▶ Play</button>
-        <label class="field inline"><span class="field-label">Tempo</span><input id="checkBpm" type="number" min="30" max="200" value="72" aria-label="Tempo in beats per minute"></label>
+        <label class="field inline"><span class="field-label" data-i18n="tempo">Tempo</span><input id="checkBpm" type="number" min="30" max="200" value="72" aria-label="Tempo in beats per minute"></label>
         <span class="spacer"></span>
-        <button type="button" id="checkExample" class="btn ghost">Load example</button>
-        <button type="button" id="checkClear" class="btn ghost">Clear</button>
+        <button type="button" id="checkExample" class="btn ghost" data-i18n="example">Load example</button>
+        <button type="button" id="checkClear" class="btn ghost" data-i18n="clear">Clear</button>
       </div>
       <details class="help">
         <summary>How to write</summary>
@@ -66,19 +67,19 @@
 
     <div class="card results" id="checkResults" aria-live="polite">
       <div class="results-head">
-        <h2>Results</h2>
+        <h2 data-i18n="results">Results</h2>
         <div id="checkSummary" class="summary"></div>
       </div>
       <ul id="issueList" class="issues"></ul>
       <details id="chordBox" class="chords" hidden>
-        <summary>How I read your chords</summary>
+        <summary data-i18n="howChords">How I read your chords</summary>
         <ul id="chordList"></ul>
       </details>
       <details class="rules">
-        <summary>Rules checked</summary>
+        <summary data-i18n="rulesSum">Rules checked</summary>
         <ul>
-          <li><b>Errors:</b> parallel 5ths, octaves and unisons; notes that aren't in the chord; missing root, 3rd or 7th; wrong bass note for the inversion; doubled leading tone, 7th, ♭6 or ♯4; voice crossing and overlap; S–A or A–T more than an octave apart, T–B more than two octaves; augmented melodic intervals; cross relations (a chromatic change should stay in one voice).</li>
-          <li><b>Warnings:</b> contrary 5ths/octaves; direct (hidden) 5ths/octaves in the outer voices; unequal 5ths into the bass; omitted 5th without a doubled root; 6/4 chords without a doubled bass; leaps of a 7th or more than an octave; unresolved 7ths, leading tones and augmented-6th tones; notes outside the usual range; bars that don't add up.</li>
+          <li data-i18n="rulesErr"><b>Errors:</b> parallel 5ths, octaves and unisons; notes that aren't in the chord; missing root, 3rd or 7th; wrong bass note for the inversion; doubled leading tone, 7th, ♭6 or ♯4; voice crossing and overlap; S–A or A–T more than an octave apart, T–B more than two octaves; augmented melodic intervals; cross relations (a chromatic change should stay in one voice).</li>
+          <li data-i18n="rulesWarn"><b>Warnings:</b> contrary 5ths/octaves; direct (hidden) 5ths/octaves in the outer voices; unequal 5ths into the bass; omitted 5th without a doubled root; 6/4 chords without a doubled bass; leaps of a 7th or more than an octave; unresolved 7ths, leading tones and augmented-6th tones; notes outside the usual range; bars that don't add up.</li>
         </ul>
       </details>
     </div>
@@ -86,31 +87,31 @@
 
   <section id="panel-harmonize" role="tabpanel" aria-labelledby="tab-harmonize" hidden>
     <header class="intro">
-      <h1>Harmonize for me</h1>
-      <p>Write a melody or a bass line, choose the chords, and TonyMony writes the other three parts. You get several correct answers to compare. Leave a note's chord empty and TonyMony picks one.</p>
+      <h1 data-i18n="harmTitle">Harmonize for me</h1>
+      <p data-i18n="harmIntro">Write a melody or a bass line, choose the chords, and TonyMony writes the other three parts. You get several correct answers to compare. Leave a note's chord empty and TonyMony picks one.</p>
     </header>
 
     <div class="card">
       <div class="bar top">
         <div class="field">
-          <span class="field-label">I'm giving</span>
+          <span class="field-label" data-i18n="giving">I'm giving</span>
           <div class="seg" id="givenSeg" role="group" aria-label="Given part">
-            <button type="button" class="tool" data-v="S">Melody (Soprano)</button>
-            <button type="button" class="tool" data-v="B">Bass</button>
+            <button type="button" class="tool" data-v="S" data-i18n="melody">Melody (Soprano)</button>
+            <button type="button" class="tool" data-v="B" data-i18n="bass">Bass</button>
           </div>
         </div>
         <p id="givenHint" class="muted small hint"></p>
       </div>
       <div id="harmEditor"></div>
       <div class="bar">
-        <button type="button" id="harmGo" class="btn primary">Harmonize</button>
-        <label class="field inline"><span class="field-label">Answers</span>
+        <button type="button" id="harmGo" class="btn primary" data-i18n="harmonize">Harmonize</button>
+        <label class="field inline"><span class="field-label" data-i18n="answers">Answers</span>
           <select id="answerCount" aria-label="Number of answers"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select>
         </label>
-        <label class="field inline"><span class="field-label">Tempo</span><input id="harmBpm" type="number" min="30" max="200" value="72" aria-label="Tempo in beats per minute"></label>
+        <label class="field inline"><span class="field-label" data-i18n="tempo">Tempo</span><input id="harmBpm" type="number" min="30" max="200" value="72" aria-label="Tempo in beats per minute"></label>
         <span class="spacer"></span>
-        <button type="button" id="harmExample" class="btn ghost">Load example</button>
-        <button type="button" id="harmClear" class="btn ghost">Clear</button>
+        <button type="button" id="harmExample" class="btn ghost" data-i18n="example">Load example</button>
+        <button type="button" id="harmClear" class="btn ghost" data-i18n="clear">Clear</button>
       </div>
     </div>
 
@@ -132,5 +133,6 @@
 <script src="js/audio.js"></script>
 <script src="js/editor.js"></script>
 <script src="js/app.js"></script>
+<script src="js/i18n.js"></script>
 </body>
 </html>
