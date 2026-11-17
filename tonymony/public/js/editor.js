@@ -67,8 +67,9 @@ function createEditor(root, opts) {
   const voiceSeg = h("div", { class: "seg voices", role: "group", "aria-label": "Voice" });
   const durSeg = h("div", { class: "seg", role: "group", "aria-label": "Duration" });
   DURATIONS.forEach((d, i) => durSeg.appendChild(h("button", { type: "button", class: "tool smufl", "data-dur": d.ticks, title: `${d.name} ( ${i + 1} )`, "aria-label": d.name }, DUR_GLYPH[d.id])));
-  const dotBtn = h("button", { type: "button", class: "tool smufl", title: "Dotted ( . )", "aria-label": "Dotted" }, " ");
-  dotBtn.textContent = "";   // just the augmentation dot, no note
+  const dotBtn = h("button", { type: "button", class: "tool dot", title: "Dotted ( . )", "aria-label": "Dotted" }, "•");
+  //" ");
+  //"";   // just the augmentation dot, no note
   const restBtn = h("button", { type: "button", class: "tool smufl", title: "Rest ( R )", "aria-label": "Rest" }, "");
   durSeg.append(dotBtn, restBtn);
   const accSeg = h("div", { class: "seg", role: "group", "aria-label": "Accidental" });

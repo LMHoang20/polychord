@@ -140,6 +140,7 @@ select:focus, input:focus, button:focus-visible, .ed-staff:focus-visible, .issue
 .tool.on { background: var(--accent); color: var(--accent-ink); }
 .tool:disabled { opacity: .35; cursor: default; background: none; }
 .tool.smufl { font-family: "Bravura", serif; font-size: 26px; line-height: 1; padding-top: 2px; }
+.tool.dot { font-size: 26px; line-height: 1; }
 .tool.smufl.acc { font-size: 24px; padding-top: 6px; }
 .tool.voice span { font-weight: 500; font-size: 13px; }
 .tool.voice:not(.on) span { color: var(--muted); }
