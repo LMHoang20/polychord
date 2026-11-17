@@ -21,5 +21,5 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm test
-      - name: Validate vercel.json
-        run: node -e "JSON.parse(require('fs').readFileSync('vercel.json','utf8'))"
+      - name: Validate vercel.json files
+        run: node -e "for (const f of ['vercel.json','tonymony/vercel.json']) JSON.parse(require('fs').readFileSync(f,'utf8'))"

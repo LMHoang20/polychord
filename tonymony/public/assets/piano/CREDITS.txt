@@ -1,0 +1,11 @@
+Piano recordings
+
+The MP3s in this folder come from the Fluid R3 GM soundfont by Frank Wen
+(acoustic_grand_piano), as pre-rendered by Benjamin Gleitzman in
+midi-js-soundfonts: https://github.com/gleitz/midi-js-soundfonts (FluidR3_GM)
+
+They are licensed under Creative Commons Attribution 3.0:
+https://creativecommons.org/licenses/by/3.0/
+
+TonyMony uses a subset (one note every 3 semitones from C2 to C7), renamed by
+MIDI note number. The recordings themselves are unchanged.

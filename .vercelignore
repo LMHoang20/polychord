@@ -5,3 +5,5 @@ test/
 .github/
 *.md
 bot/
+# TonyMony is its own Vercel project (Root Directory: tonymony)
+tonymony/

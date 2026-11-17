@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="TonyMony: write 4-part SATB harmony on a grand staff and get it checked for parallel 5ths and octaves, missing chord tones, spacing, voice crossing and more, or let it harmonize your melody or bass from your Roman numerals.">
+<meta name="theme-color" content="#f6f4ef">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<title>TonyMony: SATB harmony checker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/Bravura.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/styles.css">
+<script>
+  // Set the theme before first paint, so dark mode doesn't flash light.
+  try {
+    var t = localStorage.getItem("tm-theme");
+    document.documentElement.dataset.theme = t || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  } catch (e) { document.documentElement.dataset.theme = "light"; }
+</script>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="./">
+      <span class="brand-logo" aria-hidden="true">𝄞</span>
+      <span class="brand-name">Tony<b>Mony</b></span>
+    </a>
+    <div class="tabs" role="tablist" aria-label="Sections">
+      <button type="button" role="tab" id="tab-check" data-tab="check" aria-controls="panel-check">Check my work</button>
+      <button type="button" role="tab" id="tab-harmonize" data-tab="harmonize" aria-controls="panel-harmonize">Harmonize for me</button>
+    </div>
+    <button type="button" id="themeBtn" class="theme-btn">☾ Dark</button>
+  </div>
+</nav>
+
+<main class="app">
+
+  <section id="panel-check" role="tabpanel" aria-labelledby="tab-check" hidden>
+    <header class="intro">
+      <h1>Check my 4-part harmony</h1>
+      <p>Write Soprano and Alto on the treble staff and Tenor and Bass on the bass staff, add a Roman numeral under each chord, and TonyMony marks every broken rule as you go.</p>
+    </header>
+
+    <div class="card">
+      <div id="checkEditor"></div>
+      <div class="bar">
+        <button type="button" id="checkPlay" class="btn play">▶ Play</button>
+        <label class="field inline"><span class="field-label">Tempo</span><input id="checkBpm" type="number" min="30" max="200" value="72" aria-label="Tempo in beats per minute"></label>
+        <span class="spacer"></span>
+        <button type="button" id="checkExample" class="btn ghost">Load example</button>
+        <button type="button" id="checkClear" class="btn ghost">Clear</button>
+      </div>
+      <details class="help">
+        <summary>How to write</summary>
+        <ul>
+          <li><b>Add notes:</b> pick a voice (S A T B) and a duration, then click the staff. Or type the letters A–G.</li>
+          <li><b>Change a note:</b> click it, then click higher or lower in its column, or use ↑/↓ (Shift = octave), the accidental buttons, <kbd>-</kbd> flat, <kbd>=</kbd> sharp, <kbd>n</kbd> natural, <kbd>1</kbd>–<kbd>5</kbd> duration, <kbd>.</kbd> dot, <kbd>R</kbd> rest, <kbd>⌫</kbd> delete. ←/→ walk through the notes, <kbd>Esc</kbd> lets go.</li>
+          <li><b>Chords:</b> click the <b>+</b> under a beat and type (I, ii6, IV64, V65/V, viiø7, N6, It+6, Fr+6, Ger+6, Cad64…). <kbd>Tab</kbd> moves to the next beat. Or click the chord buttons above the staff to fill the beats in order. Type <kbd>o</kbd> for °, <kbd>%</kbd> for ø.</li>
+          <li><b>Switch voice:</b> <kbd>Alt</kbd>+<kbd>1</kbd>–<kbd>4</kbd>. Undo with <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Z</kbd>. Your work is saved in this browser.</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="card results" id="checkResults" aria-live="polite">
+      <div class="results-head">
+        <h2>Results</h2>
+        <div id="checkSummary" class="summary"></div>
+      </div>
+      <ul id="issueList" class="issues"></ul>
+      <details id="chordBox" class="chords" hidden>
+        <summary>How I read your chords</summary>
+        <ul id="chordList"></ul>
+      </details>
+      <details class="rules">
+        <summary>Rules checked</summary>
+        <ul>
+          <li><b>Errors:</b> parallel 5ths, octaves and unisons; notes that aren't in the chord; missing root, 3rd or 7th; wrong bass note for the inversion; doubled leading tone, 7th, ♭6 or ♯4; voice crossing and overlap; S–A or A–T more than an octave apart, T–B more than two octaves; augmented melodic intervals; cross relations (a chromatic change should stay in one voice).</li>
+          <li><b>Warnings:</b> contrary 5ths/octaves; direct (hidden) 5ths/octaves in the outer voices; unequal 5ths into the bass; omitted 5th without a doubled root; 6/4 chords without a doubled bass; leaps of a 7th or more than an octave; unresolved 7ths, leading tones and augmented-6th tones; notes outside the usual range; bars that don't add up.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <section id="panel-harmonize" role="tabpanel" aria-labelledby="tab-harmonize" hidden>
+    <header class="intro">
+      <h1>Harmonize for me</h1>
+      <p>Write a melody or a bass line, choose the chords, and TonyMony writes the other three parts. You get several correct answers to compare. Leave a note's chord empty and TonyMony picks one.</p>
+    </header>
+
+    <div class="card">
+      <div class="bar top">
+        <div class="field">
+          <span class="field-label">I'm giving</span>
+          <div class="seg" id="givenSeg" role="group" aria-label="Given part">
+            <button type="button" class="tool" data-v="S">Melody (Soprano)</button>
+            <button type="button" class="tool" data-v="B">Bass</button>
+          </div>
+        </div>
+        <p id="givenHint" class="muted small hint"></p>
+      </div>
+      <div id="harmEditor"></div>
+      <div class="bar">
+        <button type="button" id="harmGo" class="btn primary">Harmonize</button>
+        <label class="field inline"><span class="field-label">Answers</span>
+          <select id="answerCount" aria-label="Number of answers"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select>
+        </label>
+        <label class="field inline"><span class="field-label">Tempo</span><input id="harmBpm" type="number" min="30" max="200" value="72" aria-label="Tempo in beats per minute"></label>
+        <span class="spacer"></span>
+        <button type="button" id="harmExample" class="btn ghost">Load example</button>
+        <button type="button" id="harmClear" class="btn ghost">Clear</button>
+      </div>
+    </div>
+
+    <ul id="harmProblems" class="problems card" hidden></ul>
+    <div id="answers" class="answers"></div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  TonyMony, a sister site of <a href="https://github.com/LMHoang20/polychord">TonyPoly</a>. Music font: <a href="fonts/OFL.txt">Bravura</a> (SIL OFL). Piano: <a href="assets/piano/CREDITS.txt">FluidR3 GM</a> (CC BY 3.0).
+</footer>
+
+<script src="js/theory.js"></script>
+<script src="js/score.js"></script>
+<script src="js/checker.js"></script>
+<script src="js/harmonizer.js"></script>
+<script src="js/render.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
