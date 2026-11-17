@@ -105,7 +105,7 @@ Either way:
 - **Check:** the bot replies with a link to the PR, where Vercel posts a preview link.
 - **Revise:** comment `/bot <what to change>` on the bot's PR.
 
-The AI only gets to read and edit files and run `npm test`. Only changes to `public/`, `test/` and `README.md` are kept, and the AI never holds a GitHub token. Both versions read the allowlist from the `ISSUE_BOT_ALLOWLIST` repo variable.
+The AI only gets to read and edit files and run `npm test`. Only changes to `public/`, `test/` and `README.md` are kept (the Docker version also keeps `tonymony/public/` and `tonymony/test/`, so it can work on TonyMony too), and the AI never holds a GitHub token. Both versions read the allowlist from the `ISSUE_BOT_ALLOWLIST` repo variable.
 
 GitHub Actions setup (once):
 

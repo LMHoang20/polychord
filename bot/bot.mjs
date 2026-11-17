@@ -3,8 +3,8 @@
 //
 // Runs as root inside its container (see Dockerfile and compose.yml). Root
 // holds the GitHub token and the git clone; Claude runs as the "agent" user on
-// a copy of the files with no .git folder and no GitHub token, and only
-// public/, test/ and README.md are copied back.
+// a copy of the files with no .git folder and no GitHub token, and only the
+// ALLOWED paths are copied back.
 import { spawn } from "node:child_process";
 import { cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -15,7 +15,8 @@ const STATE_FILE = "/state/state.json";
 const REPO_DIR = "/state/repo";
 const WORK = "/work";
 const AGENT_UID = 10001; // matches the Dockerfile
-const ALLOWED = ["public", "test", "README.md"];
+// TonyPoly is public/ and test/; TonyMony, the sister site, is under tonymony/.
+const ALLOWED = ["public", "test", "tonymony/public", "tonymony/test", "README.md"];
 const CLAUDE_TIMEOUT_MS = 30 * 60 * 1000;
 const TEST_TIMEOUT_MS = 10 * 60 * 1000;
 const FIX_ATTEMPTS = 2; // extra Claude runs when the final test run fails
@@ -138,13 +139,16 @@ You already worked on this request in this folder, but \`npm test\` still fails.
 ${failingTests}
 \`\`\`
 ` : "";
-  return `You are making a change to TonyPoly, a static jazz-harmony website, for a non-technical user who asked for it in a GitHub issue.
+  return `You are making a change for a non-technical user who asked for it in a GitHub issue. This folder holds two static music websites:
+- TonyPoly, jazz-harmony tools (Polychord, Modulation, Randomizer, Multinotes): public/, tested in test/.
+- TonyMony, a 4-part SATB harmony checker and harmonizer: tonymony/public/, tested in tonymony/test/.
 
 Rules:
-- Read README.md first and follow it: plain HTML, CSS and JavaScript in public/, no dependencies, no build step, classic script tags that share globals.
-- Only edit files in public/, test/ and README.md. Changes anywhere else are thrown away.
+- Work out from the request which site it is about and change only that site. If you can't tell, change nothing and ask.
+- Read README.md first and follow it: plain HTML, CSS and JavaScript, no dependencies, no build step, classic script tags that share globals.
+- Only edit files in public/, test/, tonymony/public/, tonymony/test/ and README.md. Changes anywhere else are thrown away.
 - Keep the change as small as possible and match the style of the surrounding code.
-- For logic changes, add or update tests in test/. Run \`npm test\` (or \`node --test test/<file>\` for one file) and fix any failures before you finish. Don't finish while tests fail.
+- For logic changes, add or update tests in that site's test folder. Run \`npm test\` (it runs both sites' tests; \`node --test <file>\` runs one file) and fix any failures before you finish. Don't finish while tests fail.
 - There is no git here and you can't open a pull request; that happens after you finish.
 - If the request is unclear, impossible, or would need changes outside the allowed files, change nothing and explain what you need.
 ${retry}
