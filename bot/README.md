@@ -9,7 +9,7 @@ Everything runs in one container with its own clone of the repo in a Docker volu
 - **The bot process** (`bot.mjs`, root in the container) holds the GitHub token and the clone.
 - **Claude** runs as a separate `agent` user on a plain copy of the files, with no `.git` folder. It can't read the GitHub token, the clone, or the bot's environment.
 - **Claude's tools** are limited to reading and editing files in that copy and running `npm test`. Everything else is denied.
-- **Afterwards** the bot reruns `npm test` as `agent`, then copies back only `public/`, `test/` and `README.md`, rejecting symlinks. It commits, pushes and opens the PR itself.
+- **Afterwards** the bot reruns `npm test` as `agent`, then copies back only `public/`, `test/`, `tonymony/public/`, `tonymony/test/` and `README.md`, rejecting symlinks. It commits, pushes and opens the PR itself.
 - **Container limits:** the container drops all Linux capabilities except the five it needs, and `no-new-privileges` is on.
 
 Claude's own token is visible to Claude, since it needs it. Nothing on your Mac outside the container is reachable.
@@ -34,7 +34,7 @@ Claude's own token is visible to Claude, since it needs it. Nothing on your Mac 
    docker compose -f bot/compose.yml logs -f      # watch what it does
    ```
 
-It restarts with Docker. Requests made while your machine is asleep or Docker is stopped are picked up when it's back. On first start it only acts on requests made from then on; comment `/bot` on an older issue to hand it over.
+It restarts with Docker. Requests made while your machine is asleep or Docker is stopped are picked up when it's back. If a request fails, or the bot stops in the middle of one, it tries again (3 attempts in total, 1 and then 2 minutes apart) before telling the requester it couldn't finish. On first start it only acts on requests made from then on; comment `/bot` on an older issue to hand it over.
 
 ## Day to day
 
