@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { load } from "./load.js";
 
 // Runs i18n.js against a tiny fake page with one translatable element.
 function setup(saved) {
@@ -42,6 +43,35 @@ test("i18n: saved language is applied on load, and English is restored", () => {
   s.select.onchange();
   assert.equal(s.el.innerHTML, "♥ Donate");
   assert.equal(s.store.lang, "en");
+});
+
+test("i18n: every checker message is translated in every language", () => {
+  // A score that trips most rules: crossing, spacing, range, parallels, wrong chords, short parts…
+  const mess = load().get(`checkScore(scoreFromText({ key: "C", scale: "major",
+    S: "E5 D5 G5 C5 G6/h", A: "G4 A4 E4 E4 F4", T: "C4 C4 D4 F3 B3 C4", B: "C3 G3 G3 B2 B3",
+    numerals: ["I", "V", "IV", "Ger+6", "viiø7", "xyz"] })).issues`);
+  const msgs = mess.map(x => x.msg);
+  msgs.push("Add Roman numerals under the bass to check the chords too. For now only voice leading is checked.",
+    "Parallel octaves between the Soprano and Bass (C5/C3 → D5/D3).",
+    "Direct (hidden) 5ths in the outer voices: the Soprano leaps into a perfect 5th in similar motion with the Bass.");
+  assert.ok(msgs.length > 5);
+  for (const lang of ["vi", "zh", "th", "fr", "es", "ru"]) {
+    const s = setup(lang);
+    for (const m of msgs) {
+      const t = s.get("trMsg")(m);
+      assert.notEqual(t, m, `${lang}: ${m}`);
+      assert.ok(!/\$\d|undefined/.test(t), `${lang}: ${t}`);
+    }
+  }
+  const vi = setup("vi");
+  assert.equal(vi.get("trMsg")("The Alto part is empty."), "Bè Alto đang trống.");
+  assert.equal(vi.get("trPos")("bar 2, beat 3"), "ô nhịp 2, phách 3");
+});
+
+test("i18n: English results are left as written", () => {
+  const s = setup("en");
+  assert.equal(s.get("trMsg")("The Alto part is empty."), "The Alto part is empty.");
+  assert.equal(s.get("trPos")("bar 2, beat 3"), "bar 2, beat 3");
 });
 
 test("i18n: unknown saved language falls back to English", () => {

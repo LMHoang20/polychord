@@ -69,6 +69,10 @@ function initTabs(onShow) {
 
 /* ---------- Shared bits ---------- */
 const LEVEL_TEXT = { error: "Error", warn: "Warning", info: "Note" };
+const LEVEL_KEY = { error: "lvlError", warn: "lvlWarn", info: "lvlNote" };
+
+// Text from i18n.js for the chosen language ($1 filled in), or the English given.
+function say(key, en, n) { return tr(key, en).replace("$1", n); }
 
 function marksFor(issues) {
   const m = {};
@@ -82,17 +86,17 @@ function marksFor(issues) {
 }
 
 function summaryHtml(counts, hasNotes) {
-  if (!hasNotes) return `<span class="sum-empty">Nothing to check yet.</span>`;
-  if (!counts.error && !counts.warn) return `<span class="badge ok">✓ No rule broken</span>`;
-  return [counts.error ? `<span class="badge err">${counts.error} error${counts.error > 1 ? "s" : ""}</span>` : "",
-    counts.warn ? `<span class="badge warn">${counts.warn} warning${counts.warn > 1 ? "s" : ""}</span>` : ""].join(" ");
+  if (!hasNotes) return `<span class="sum-empty">${tr("nothing", "Nothing to check yet.")}</span>`;
+  if (!counts.error && !counts.warn) return `<span class="badge ok">${tr("noRule", "✓ No rule broken")}</span>`;
+  return [counts.error ? `<span class="badge err">${say("nErr", `${counts.error} error${counts.error > 1 ? "s" : ""}`, counts.error)}</span>` : "",
+    counts.warn ? `<span class="badge warn">${say("nWarn", `${counts.warn} warning${counts.warn > 1 ? "s" : ""}`, counts.warn)}</span>` : ""].join(" ");
 }
 
 function issueListHtml(score, issues) {
   return issues.map((x, i) => `<li class="issue ${x.level}" data-i="${i}" tabindex="0">
-      <span class="lvl">${LEVEL_TEXT[x.level]}</span>
-      <span class="where">${positionText(score, x.tick)}</span>
-      <span class="msg">${esc(x.msg)}</span></li>`).join("");
+      <span class="lvl">${tr(LEVEL_KEY[x.level], LEVEL_TEXT[x.level])}</span>
+      <span class="where">${trPos(positionText(score, x.tick))}</span>
+      <span class="msg">${esc(trMsg(x.msg))}</span></li>`).join("");
 }
 
 function chordListHtml(score, chords) {
@@ -101,9 +105,9 @@ function chordListHtml(score, chords) {
   return ticks.map(t => {
     const c = chords[t];
     const text = esc(score.numerals[t]);
-    if (!c || c.error) return `<li><b>${text}</b> <span class="bad">can't read this</span></li>`;
+    if (!c || c.error) return `<li><b>${text}</b> <span class="bad">${tr("cantChord", "can't read this")}</span></li>`;
     const bassTone = c.tones.find(x => x.role === c.bassRole);
-    return `<li><span class="where">${positionText(score, t)}</span> <b>${text}</b> = ${esc(c.name)}: ${esc(chordToneList(c))}${bassTone ? ` <span class="muted">(bass ${esc(pcName(bassTone))})</span>` : ""}</li>`;
+    return `<li><span class="where">${trPos(positionText(score, t))}</span> <b>${text}</b> = ${esc(c.name)}: ${esc(chordToneList(c))}${bassTone ? ` <span class="muted">(${tr("bassLbl", "bass")} ${esc(pcName(bassTone))})</span>` : ""}</li>`;
   }).join("");
 }
 
@@ -123,6 +127,8 @@ function playButton(btn, getScore, getBpm) {
 }
 
 /* ---------- Check my work ---------- */
+let refreshResults = null;   // redraws the results; i18n.js calls it when the language changes
+
 function initCheck(openTab) {
   const results = document.getElementById("checkResults");
   const summary = document.getElementById("checkSummary");
@@ -173,6 +179,7 @@ function initCheck(openTab) {
   });
 
   run(ed.getScore());
+  refreshResults = () => run(ed.getScore());
   return { editor: ed, load: score => { ed.setScore(score); openTab("check"); window.scrollTo({ top: 0, behavior: "smooth" }); } };
 }
 

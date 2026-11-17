@@ -32,7 +32,7 @@ tonymony/
     js/editor.js   the clickable staff, toolbar and keyboard input
     js/audio.js    piano playback
     js/app.js      page wiring
-    js/i18n.js     language picker (en, vi, zh, th, fr, es, ru) for the menu, headings and Donate page
+    js/i18n.js     language picker (en, vi, zh, th, fr, es, ru) for the menu, headings, Results (messages and counts) and Donate page
     donate.html    Donate page (bank details; QR image goes in assets/donate-qr.png)
   test/            node:test suites (run by npm test)
 ```
