@@ -16,6 +16,40 @@ function el(tag) {
   return e;
 }
 
+test("the editor draws a staff in every key and scale", () => {
+  const document = { createElement: el, createElementNS: (ns, t) => el(t), activeElement: null };
+  const t = load([...CORE, "render.js", "audio.js", "editor.js"], {
+    document, window: { addEventListener() {} }, localStorage: { getItem: () => null, setItem() {} }, setTimeout, clearTimeout,
+  });
+  const bad = t.get(`(() => {
+    const bad = [];
+    Object.keys(SCALES).forEach(scale => tonicsFor(scale).forEach(tonic => {
+      try {
+        const root = document.createElement("div");
+        createEditor(root, { voices: ["S"], initial: emptyScore({ tonic: parseNote(tonic), scale }) });
+        if (!root.children.some(c => c.children.some(x => /<svg/.test(x._html)))) bad.push(tonic + " " + scale + ": no staff");
+      } catch (err) { bad.push(tonic + " " + scale + ": " + err.message); }
+    }));
+    return bad.join("; ");
+  })()`);
+  assert.equal(bad, "");
+});
+
+test("a saved score that can't be drawn doesn't hide the staff", () => {
+  const saved = JSON.stringify({ tonic: { l: 0, a: 0 }, scale: "major", time: [4, 4], numerals: { 0: 5 },
+    voices: { S: [{ d: 48, n: { l: 0, a: 0 } }], A: [], T: [], B: [] } });
+  const document = { createElement: el, createElementNS: (ns, t) => el(t), activeElement: null };
+  const t = load([...CORE, "render.js", "audio.js", "editor.js"], {
+    document, window: { addEventListener() {} }, localStorage: { getItem: () => saved, setItem() {} }, setTimeout, clearTimeout,
+  });
+  const html = t.get(`(() => {
+    const root = document.createElement("div");
+    createEditor(root, { voices: ["S"], storageKey: "tm-harm", initial: emptyScore() });
+    return root.children.map(c => c.children.map(x => x._html).join("")).join("");
+  })()`);
+  assert.match(html, /<svg/);
+});
+
 test("the editor draws a staff in Harmonize (one voice)", () => {
   const document = { createElement: el, createElementNS: (ns, t) => el(t), activeElement: null };
   const t = load([...CORE, "render.js", "audio.js", "editor.js"], {

@@ -115,7 +115,7 @@ function createEditor(root, opts) {
     const tonics = tonicsFor(score.scale);
     const cur = pcName(score.tonic).replace("♯", "#").replace("♭", "b");
     tonicSel.innerHTML = "";
-    tonics.forEach(t => tonicSel.appendChild(h("option", { value: t }, t.replace("#", "♯").replace(/(?<=[A-G])b/, "♭"))));
+    tonics.forEach(t => tonicSel.appendChild(h("option", { value: t }, t.replace("#", "♯").replace(/^([A-G])b/, "$1♭"))));
     tonicSel.value = tonics.includes(cur) ? cur : tonics[0];
     scaleSel.value = score.scale;
     tnum.value = score.time[0];
@@ -584,8 +584,16 @@ function createEditor(root, opts) {
   let resizeTimer = null;
   window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if (staffBox.clientWidth) render(); }, 120); });
 
-  syncControls();
-  render();
+  try {
+    syncControls();
+    render();
+  } catch (err) {
+    // a saved score that can't be drawn: start again from the default one
+    score = opts.initial ? cloneScore(opts.initial) : emptyScore();
+    try { if (opts.storageKey) localStorage.setItem(opts.storageKey, JSON.stringify(score)); } catch (err2) { /* ignore */ }
+    syncControls();
+    render();
+  }
 
   return {
     getScore: () => score,
