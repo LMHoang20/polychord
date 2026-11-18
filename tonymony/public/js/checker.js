@@ -16,7 +16,7 @@ function vn(v) { return VOICE_NAMES[v]; }
 function nn(n) { return noteName(n); }
 function pairName(a, b) { return `${vn(a)} and ${vn(b)}`; }
 function roleWord(role) {
-  return { "1": "root", "3": "3rd", "5": "5th", "7": "7th", b6: "♭6", "#4": "♯4", "2": "2nd", b3: "♭3" }[role] || role;
+  return { "1": "root", "3": "3rd", "5": "5th", "7": "7th", "9": "9th", "11": "11th", "13": "13th", b6: "♭6", "#4": "♯4", "2": "2nd", b3: "♭3" }[role] || role;
 }
 
 function checkScore(score) {
@@ -137,7 +137,7 @@ function checkChord(s, chord, add, mark) {
 
   chord.tones.forEach(t => {
     if (count(t.role) > 0 || !toneRequired(chord, t.role)) return;
-    if (t.role === "5" && chord.kind === "tertian") {
+    if (t.role === "5" && chord.kind === "tertian" && !t.needed) {
       if (count("1") < 2) add("warn", "missing", s.tick, `${label} leaves out the 5th (${pcName(t)}). That's fine only when the root is doubled.`, all);
       return;
     }

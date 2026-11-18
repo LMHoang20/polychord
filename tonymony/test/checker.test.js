@@ -35,6 +35,16 @@ test("missing chord tones, wrong notes and wrong bass", () => {
   assert.ok(check({ S: "E5", A: "G4", T: "C4", B: "C3", numerals: ["I6"] }).issues.some(i => i.rule === "bass" && /E \(the 3rd\)/.test(i.msg)));
 });
 
+test("altered extensions and the 13th can't be left out; letter symbols are checked", () => {
+  // V7#11 without the C♯ is missing its 11th; V9 without the 9th is fine
+  assert.ok(check({ S: "F4", A: "D4", T: "B3", B: "G2", numerals: ["V7#11"] }).issues.some(i => i.rule === "missing" && /11th/.test(i.msg)));
+  assert.ok(!check({ S: "F4", A: "D4", T: "B3", B: "G2", numerals: ["V9"] }).issues.some(i => i.rule === "missing"));
+  assert.ok(check({ S: "A4", A: "F4", T: "B3", B: "G2", numerals: ["V13"] }).issues.some(i => i.rule === "missing" && /13th/.test(i.msg)));
+  assert.ok(check({ S: "G4", A: "E4", T: "C4", B: "C3", numerals: ["C+"] }).issues.some(i => i.rule === "chord-tone" && /isn't in C\+/.test(i.msg)));
+  assert.ok(!check({ S: "G#4", A: "E4", T: "C4", B: "C3", numerals: ["C+"] }).issues.some(i => i.rule === "chord-tone"));
+  assert.ok(!check({ S: "G4", A: "E4", T: "C4", B: "C3", numerals: ["C"] }).issues.some(i => i.rule === "numeral"));
+});
+
 test("extended chords: only root, 3rd and 7th are required; 3rd rises a half step, 7th falls a whole step", () => {
   // V9 with no 5th or 13th is complete; B→C is fine, but F→E is only a half step
   const r = check({ S: "A4 G4", A: "F4 E4", T: "B3 C4", B: "G2 C3", numerals: ["V9", "I"] });

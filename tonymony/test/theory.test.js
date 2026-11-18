@@ -60,6 +60,22 @@ test("Roman numerals: extensions and alterations", () => {
   assert.equal(name("ii9"), "Dm9");
 });
 
+test("letter-name chord symbols", () => {
+  assert.equal(tones("C+"), "C E G♯ / bass 1");
+  assert.equal(tones("Cdim"), "C E♭ G♭ / bass 1");
+  assert.equal(tones("Cdim7"), "C E♭ G♭ B♭♭ / bass 1");
+  assert.equal(tones("Dm7b5"), "D F A♭ C / bass 1");
+  assert.equal(tones("C7"), "C E G B♭ / bass 1");
+  assert.equal(tones("Cmaj7"), "C E G B / bass 1");
+  assert.equal(tones("E7#11"), "E G♯ B D A♯ / bass 1");
+  assert.equal(tones("G13"), "G B D F A E / bass 1");
+  assert.equal(tones("Bbm"), "B♭ D♭ F / bass 1");
+  assert.equal(tones("Cad64"), "C E G / bass 5");   // still the cadential 6/4
+  const name = n => t.get(`parseNumeral(${JSON.stringify(n)}, { tonic: parseNote("C"), scale: "major" }).name`);
+  assert.equal(name("E7#11"), "E7#11");
+  assert.match(tones("H7"), /ERROR/);
+});
+
 test("Roman numerals: chromatic chords", () => {
   assert.equal(tones("N6"), "D♭ F A♭ / bass 3");
   assert.equal(tones("It+6"), "A♭ C F♯ / bass b6");
