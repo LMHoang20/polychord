@@ -14,7 +14,8 @@ const DUR_GLYPH = { w: "", h: "", q: "", e: "", s: "" };
 const ACC_BUTTONS = [[-2, "", "Double flat"], [-1, "", "Flat ( - )"], [0, "", "Natural ( n )"], [1, "", "Sharp ( = )"], [2, "", "Double sharp"]];
 const EXTRA_CHORDS = ["V7", "viiø7", "vii°7", "Cad64", "N6", "It+6", "Fr+6", "Ger+6", "V/V", "V7/V", "vii°7/V", "V7/IV", "V7/ii", "V7/vi", "bVI", "iv"];
 const FIGURE_CHIPS = ["6", "64", "7", "65", "43", "42"];
-const SYMBOL_CHIPS = [["+", "Augmented"], ["°", "Diminished"], ["ø", "Half-diminished"]];
+const EXTENSION_CHIPS = ["9", "11", "13", "b5", "#5", "b9", "#9", "#11", "b13"];
+const SYMBOL_CHIPS =[["+", "Augmented"], ["°", "Diminished"], ["ø", "Half-diminished"]];
 
 function h(tag, attrs, html) {
   const el = document.createElement(tag);
@@ -161,6 +162,10 @@ function createEditor(root, opts) {
     syms.appendChild(h("span", { class: "chip-label" }, "Symbols"));
     SYMBOL_CHIPS.forEach(([s, name]) => syms.appendChild(h("button", { type: "button", class: "chip fig-chip", "data-sym": s, title: `${name}: put ${s} on the chord at this beat` }, s)));
     chips.appendChild(syms);
+    const exts = h("div", { class: "chip-row" });
+    exts.appendChild(h("span", { class: "chip-label" }, "Extensions"));
+    EXTENSION_CHIPS.forEach(x => exts.appendChild(h("button", { type: "button", class: "chip fig-chip", "data-ext": x, title: `Add ${x} to the chord at this beat` }, x)));
+    chips.appendChild(exts);
   }
   function chordTitle(c) {
     const p = parseNumeral(c, key());
@@ -346,6 +351,22 @@ function createEditor(root, opts) {
       // ° and ø go on lowercase numerals, + on uppercase ones
       const value = cur.replace(/^([#b]*)([IViv]+)[°ø+]?/, (m, acc, rn) => acc + (sym === "+" ? rn.toUpperCase() : rn.toLowerCase()) + sym);
       if (value === cur) { status.textContent = "Pick a chord first, then add the symbol."; return; }
+      if (numeralTick !== null) { numInput.value = value; numInput.focus(); }
+      else setNumeral(tick, value);
+    } else if (btn.dataset.ext !== undefined) {
+      const ext = btn.dataset.ext;
+      const cur = numeralTick !== null ? numInput.value : score.numerals[tick] || "";
+      const [, head, tail = ""] = cur.match(/^([^/]*)(\/.*)?$/);
+      if (!head) { status.textContent = "Pick a chord first, then add the extension."; return; }
+      const parts = head.match(/^(.*?)(7|9|11|13)((?:[b#]\d+)*)$/);
+      let value;
+      if (/^\d/.test(ext)) value = (parts ? parts[1] : head.replace(/(65|43|42|64|6)$/, "")) + ext + tail;
+      else {
+        // an alteration: keep the extension (or start from a 7th) and swap any earlier alteration of the same note
+        const base = parts ? parts[1] + parts[2] : head.replace(/(65|43|42|64|6)$/, "") + "7";
+        const alts = (parts ? parts[3] : "").match(/[b#]\d+/g) || [];
+        value = base + alts.filter(a => a.slice(1) !== ext.slice(1)).concat(ext).join("") + tail;
+      }
       if (numeralTick !== null) { numInput.value = value; numInput.focus(); }
       else setNumeral(tick, value);
     } else {
