@@ -146,6 +146,7 @@ function createEditor(root, opts) {
       ["Triads", diatonicNumerals(k, false)],
       ["7ths", diatonicNumerals(k, true)],
       ["More", EXTRA_CHORDS.filter(c => { const p = parseNumeral(c, k); return p && !p.error; })],
+      ["Letters", letterChords(k)],
     ];
     groups.forEach(([label, list]) => {
       const row = h("div", { class: "chip-row" });
@@ -166,6 +167,15 @@ function createEditor(root, opts) {
     exts.appendChild(h("span", { class: "chip-label" }, "Extensions"));
     EXTENSION_CHIPS.forEach(x => exts.appendChild(h("button", { type: "button", class: "chip fig-chip", "data-ext": x, title: `Add ${x} to the chord at this beat` }, x)));
     chips.appendChild(exts);
+  }
+  // The key's triads and 7ths as letter-name symbols (C, Dm7, B°, …) that parse back to the same chord.
+  function letterChords(k) {
+    return [false, true].flatMap(sevenths => diatonicNumerals(k, sevenths)).map(n => {
+      const p = parseNumeral(n, k);
+      const name = normalizeNumeral(p.name);
+      const lc = parseNumeral(name, k);
+      return lc && !lc.error && lc.kind === "tertian" && lc.tones.every((t, i) => samePc(t, p.tones[i])) ? name : null;
+    }).filter(Boolean);
   }
   function chordTitle(c) {
     const p = parseNumeral(c, key());
@@ -349,7 +359,10 @@ function createEditor(root, opts) {
       const sym = btn.dataset.sym;
       const cur = numeralTick !== null ? numInput.value : score.numerals[tick] || "";
       // ° and ø go on lowercase numerals, + on uppercase ones
-      const value = cur.replace(/^([#b]*)([IViv]+)[°ø+]?/, (m, acc, rn) => acc + (sym === "+" ? rn.toUpperCase() : rn.toLowerCase()) + sym);
+      // a letter-name chord (C, Dm7) swaps its quality symbol instead
+      const value = /^[A-G]/.test(cur)
+        ? cur.replace(/^([A-G](?:bb|b|##|#)?)(?:dim|aug|min|[°ø+m-])?/, "$1" + sym)
+        : cur.replace(/^([#b]*)([IViv]+)[°ø+]?/, (m, acc, rn) => acc + (sym === "+" ? rn.toUpperCase() : rn.toLowerCase()) + sym);
       if (value === cur) { status.textContent = "Pick a chord first, then add the symbol."; return; }
       if (numeralTick !== null) { numInput.value = value; numInput.focus(); }
       else setNumeral(tick, value);
