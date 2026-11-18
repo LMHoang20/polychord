@@ -54,6 +54,9 @@ test("Roman numerals: extensions and alterations", () => {
   assert.equal(tones("IV11"), "F A C E G B♭ / bass 1");
   assert.equal(tones("V+"), "G B D♯ / bass 1");
   assert.equal(tones("vii°"), "B D F / bass 1");
+  assert.equal(tones("V11-6"), "G B D F A C / bass 3");
+  assert.equal(tones("V13-64"), "G B D F A E / bass 5");
+  assert.equal(tones("V7b9-42"), "G B D F A♭ / bass 7");
   const name = n => t.get(`parseNumeral(${JSON.stringify(n)}, { tonic: parseNote("C"), scale: "major" }).name`);
   assert.equal(name("V7#11"), "G7#11");
   assert.equal(name("IVM9"), "Fmaj9");

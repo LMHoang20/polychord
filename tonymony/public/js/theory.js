@@ -243,9 +243,14 @@ function parseSingleNumeral(s, key) {
   if (rest[0] === "M") { majSeventh = true; rest = rest.slice(1); }
   if (rest.startsWith("+6")) return { error: `+6 goes with It, Fr or Ger` };
   // Extensions: 9, 11, 13, or 7 with alterations (V9, V13, V7#11, V7b9#5).
-  const ext = rest.match(/^(9|11|13|7(?=[b#]))((?:[b#](?:5|9|11|13))*)$/);
+  // A dash and a figure after it gives the inversion: V11-6 has the 3rd in the bass.
+  const ext = rest.match(/^(9|11|13|7(?=[b#]))((?:[b#](?:5|9|11|13))*)(?:-(\d+))?$/);
   if (ext) {
     seventh = true;
+    if (ext[3] !== undefined) {
+      if (!(ext[3] in FIGURES)) return { error: `"${ext[3]}" isn't a figure I know (try V11-6, V11-64, V11-42)` };
+      inversion = FIGURES[ext[3]][0];
+    }
   } else {
     if (!(rest in FIGURES)) return { error: `"${rest}" isn't a figure I know (try 6, 64, 7, 65, 43, 42, 9, 11, 13)` };
     [inversion, seventh] = FIGURES[rest];
