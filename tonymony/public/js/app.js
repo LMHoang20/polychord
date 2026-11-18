@@ -204,12 +204,13 @@ function initHarmonize(check) {
   function syncGiven() {
     givenSeg.querySelectorAll("button").forEach(b => { b.classList.toggle("on", b.dataset.v === given); b.setAttribute("aria-pressed", b.dataset.v === given); });
     document.getElementById("givenHint").textContent = given === "S"
-      ? "Write the melody on the treble staff, then a chord under each note."
-      : "Write the bass on the bass staff, then a chord under each note. The figure (6, 64, 65…) must match the bass note.";
+      ? "Next: click the treble staff to write the melody (or type the letters A–G), then click the + under each note to give its chord, or pick one from the chord buttons. Then press Harmonize."
+      : "Next: click the bass staff to write the bass (or type the letters A–G), then click the + under each note to give its chord, or pick one from the chord buttons. The figure (6, 64, 65…) must match the bass note. Then press Harmonize.";
   }
   givenSeg.addEventListener("click", e => {
     const b = e.target.closest("button");
-    if (!b || b.dataset.v === given) return;
+    if (!b) return;
+    if (b.dataset.v === given) { ed.focus(); return; }   // already chosen: go straight to writing
     const from = given;
     given = b.dataset.v;
     try { localStorage.setItem("tm-given", given); } catch (err) { /* ignore */ }
@@ -226,6 +227,7 @@ function initHarmonize(check) {
     ed.setVoices([given]);
     ed.setScore(s, { active: given });
     syncGiven();
+    ed.focus();
   });
 
   document.getElementById("harmGo").addEventListener("click", () => {
