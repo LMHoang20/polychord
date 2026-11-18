@@ -584,6 +584,15 @@ function createEditor(root, opts) {
   let resizeTimer = null;
   window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if (staffBox.clientWidth) render(); }, 120); });
 
+  // The staff may be hidden (another tab) or not laid out yet when first drawn, e.g. on iPad: draw again once it has a width.
+  if (window.ResizeObserver) {
+    let lastWidth = 0;
+    new ResizeObserver(() => {
+      const w = staffBox.clientWidth;
+      if (w && w !== lastWidth) { lastWidth = w; render(); }
+    }).observe(staffBox);
+  }
+
   try {
     syncControls();
     render();
