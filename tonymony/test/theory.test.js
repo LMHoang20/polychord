@@ -45,6 +45,51 @@ test("Roman numerals in major: triads, inversions and sevenths", () => {
   assert.equal(tones("viio7"), "B D F A♭ / bass 1");  // typed "o" for °
 });
 
+test("Roman numerals: extensions and alterations", () => {
+  assert.equal(tones("V9"), "G B D F A / bass 1");
+  assert.equal(tones("V13"), "G B D F A E / bass 1");
+  assert.equal(tones("V7#11"), "G B D F C♯ / bass 1");
+  assert.equal(tones("V7b9"), "G B D F A♭ / bass 1");
+  assert.equal(tones("V7#5"), "G B D♯ F / bass 1");
+  assert.equal(tones("IV11"), "F A C E G B♭ / bass 1");
+  assert.equal(tones("V+"), "G B D♯ / bass 1");
+  assert.equal(tones("vii°"), "B D F / bass 1");
+  assert.equal(tones("V11-6"), "G B D F A C / bass 3");
+  assert.equal(tones("V13-64"), "G B D F A E / bass 5");
+  assert.equal(tones("V7b9-42"), "G B D F A♭ / bass 7");
+  const name = n => t.get(`parseNumeral(${JSON.stringify(n)}, { tonic: parseNote("C"), scale: "major" }).name`);
+  assert.equal(name("V7#11"), "G7#11");
+  assert.equal(name("IVM9"), "Fmaj9");
+  assert.equal(name("ii9"), "Dm9");
+});
+
+test("letter-name chord symbols", () => {
+  assert.equal(tones("C+"), "C E G♯ / bass 1");
+  assert.equal(tones("Cdim"), "C E♭ G♭ / bass 1");
+  assert.equal(tones("Cdim7"), "C E♭ G♭ B♭♭ / bass 1");
+  assert.equal(tones("Dm7b5"), "D F A♭ C / bass 1");
+  assert.equal(tones("C7"), "C E G B♭ / bass 1");
+  assert.equal(tones("Cmaj7"), "C E G B / bass 1");
+  assert.equal(tones("E7#11"), "E G♯ B D A♯ / bass 1");
+  assert.equal(tones("G13"), "G B D F A E / bass 1");
+  assert.equal(tones("Bbm"), "B♭ D♭ F / bass 1");
+  assert.equal(tones("Cad64"), "C E G / bass 5");   // still the cadential 6/4
+  const name = n => t.get(`parseNumeral(${JSON.stringify(n)}, { tonic: parseNote("C"), scale: "major" }).name`);
+  assert.equal(name("E7#11"), "E7#11");
+  assert.match(tones("H7"), /ERROR/);
+});
+
+test("letter-name chords with a slash bass note", () => {
+  assert.equal(tones("C/E"), "C E G / bass 3");
+  assert.equal(tones("C/G"), "C E G / bass 5");
+  assert.equal(tones("G7/F"), "G B D F / bass 7");
+  assert.equal(tones("Am/C"), "A C E / bass 3");
+  assert.match(tones("C/D"), /ERROR/);
+  const name = n => t.get(`parseNumeral(${JSON.stringify(n)}, { tonic: parseNote("C"), scale: "major" }).name`);
+  assert.equal(name("C/E"), "C/E");
+  assert.equal(tones("V/V"), "D F♯ A / bass 1");   // still a secondary chord
+});
+
 test("Roman numerals: chromatic chords", () => {
   assert.equal(tones("N6"), "D♭ F A♭ / bass 3");
   assert.equal(tones("It+6"), "A♭ C F♯ / bass b6");
@@ -71,7 +116,7 @@ test("Roman numerals in minor keys use the leading tone where it belongs", () =>
 
 test("bad numerals give a readable error", () => {
   assert.match(tones("X"), /ERROR/);
-  assert.match(tones("V9"), /ERROR.*figure/);
+  assert.match(tones("V8"), /ERROR.*figure/);
   assert.match(tones("VII°"), /ERROR.*lowercase/);
   assert.match(tones("V/vii°"), /ERROR.*major or minor/);
 });

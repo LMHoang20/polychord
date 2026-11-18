@@ -14,6 +14,8 @@ const DUR_GLYPH = { w: "", h: "", q: "", e: "", s: "" };
 const ACC_BUTTONS = [[-2, "", "Double flat"], [-1, "", "Flat ( - )"], [0, "", "Natural ( n )"], [1, "", "Sharp ( = )"], [2, "", "Double sharp"]];
 const EXTRA_CHORDS = ["V7", "viiø7", "vii°7", "Cad64", "N6", "It+6", "Fr+6", "Ger+6", "V/V", "V7/V", "vii°7/V", "V7/IV", "V7/ii", "V7/vi", "bVI", "iv"];
 const FIGURE_CHIPS = ["6", "64", "7", "65", "43", "42"];
+const EXTENSION_CHIPS = ["9", "11", "13", "b5", "#5", "b9", "#9", "#11", "b13"];
+const SYMBOL_CHIPS =[["+", "Augmented"], ["°", "Diminished"], ["ø", "Half-diminished"]];
 
 function h(tag, attrs, html) {
   const el = document.createElement(tag);
@@ -113,7 +115,7 @@ function createEditor(root, opts) {
     const tonics = tonicsFor(score.scale);
     const cur = pcName(score.tonic).replace("♯", "#").replace("♭", "b");
     tonicSel.innerHTML = "";
-    tonics.forEach(t => tonicSel.appendChild(h("option", { value: t }, t.replace("#", "♯").replace(/(?<=[A-G])b/, "♭"))));
+    tonics.forEach(t => tonicSel.appendChild(h("option", { value: t }, t.replace("#", "♯").replace(/^([A-G])b/, "$1♭"))));
     tonicSel.value = tonics.includes(cur) ? cur : tonics[0];
     scaleSel.value = score.scale;
     tnum.value = score.time[0];
@@ -144,6 +146,7 @@ function createEditor(root, opts) {
       ["Triads", diatonicNumerals(k, false)],
       ["7ths", diatonicNumerals(k, true)],
       ["More", EXTRA_CHORDS.filter(c => { const p = parseNumeral(c, k); return p && !p.error; })],
+      ["Letters", letterChords(k)],
     ];
     groups.forEach(([label, list]) => {
       const row = h("div", { class: "chip-row" });
@@ -156,6 +159,23 @@ function createEditor(root, opts) {
     FIGURE_CHIPS.forEach(f => figs.appendChild(h("button", { type: "button", class: "chip fig-chip", "data-fig": f, title: `Add figure ${f}` }, f)));
     figs.appendChild(h("button", { type: "button", class: "chip fig-chip", "data-fig": "", title: "Remove the chord at this beat" }, "✕"));
     chips.appendChild(figs);
+    const syms = h("div", { class: "chip-row" });
+    syms.appendChild(h("span", { class: "chip-label" }, "Symbols"));
+    SYMBOL_CHIPS.forEach(([s, name]) => syms.appendChild(h("button", { type: "button", class: "chip fig-chip", "data-sym": s, title: `${name}: put ${s} on the chord at this beat` }, s)));
+    chips.appendChild(syms);
+    const exts = h("div", { class: "chip-row" });
+    exts.appendChild(h("span", { class: "chip-label" }, "Extensions"));
+    EXTENSION_CHIPS.forEach(x => exts.appendChild(h("button", { type: "button", class: "chip fig-chip", "data-ext": x, title: `Add ${x} to the chord at this beat` }, x)));
+    chips.appendChild(exts);
+  }
+  // The key's triads and 7ths as letter-name symbols (C, Dm7, B°, …) that parse back to the same chord.
+  function letterChords(k) {
+    return [false, true].flatMap(sevenths => diatonicNumerals(k, sevenths)).map(n => {
+      const p = parseNumeral(n, k);
+      const name = normalizeNumeral(p.name);
+      const lc = parseNumeral(name, k);
+      return lc && !lc.error && lc.kind === "tertian" && lc.tones.every((t, i) => samePc(t, p.tones[i])) ? name : null;
+    }).filter(Boolean);
   }
   function chordTitle(c) {
     const p = parseNumeral(c, key());
@@ -335,6 +355,33 @@ function createEditor(root, opts) {
       else setNumeral(tick, btn.dataset.num);
       const nx = nextNumeralTick(tick, 1);
       if (nx !== null && !selected) openNumeral(nx);
+    } else if (btn.dataset.sym !== undefined) {
+      const sym = btn.dataset.sym;
+      const cur = numeralTick !== null ? numInput.value : score.numerals[tick] || "";
+      // ° and ø go on lowercase numerals, + on uppercase ones
+      // a letter-name chord (C, Dm7) swaps its quality symbol instead
+      const value = /^[A-G]/.test(cur)
+        ? cur.replace(/^([A-G](?:bb|b|##|#)?)(?:dim|aug|min|[°ø+m-])?/, "$1" + sym)
+        : cur.replace(/^([#b]*)([IViv]+)[°ø+]?/, (m, acc, rn) => acc + (sym === "+" ? rn.toUpperCase() : rn.toLowerCase()) + sym);
+      if (value === cur) { status.textContent = "Pick a chord first, then add the symbol."; return; }
+      if (numeralTick !== null) { numInput.value = value; numInput.focus(); }
+      else setNumeral(tick, value);
+    } else if (btn.dataset.ext !== undefined) {
+      const ext = btn.dataset.ext;
+      const cur = numeralTick !== null ? numInput.value : score.numerals[tick] || "";
+      const [, head, tail = ""] = cur.match(/^([^/]*)(\/.*)?$/);
+      if (!head) { status.textContent = "Pick a chord first, then add the extension."; return; }
+      const parts = head.match(/^(.*?)(7|9|11|13)((?:[b#]\d+)*)$/);
+      let value;
+      if (/^\d/.test(ext)) value = (parts ? parts[1] : head.replace(/(65|43|42|64|6)$/, "")) + ext + tail;
+      else {
+        // an alteration: keep the extension (or start from a 7th) and swap any earlier alteration of the same note
+        const base = parts ? parts[1] + parts[2] : head.replace(/(65|43|42|64|6)$/, "") + "7";
+        const alts = (parts ? parts[3] : "").match(/[b#]\d+/g) || [];
+        value = base + alts.filter(a => a.slice(1) !== ext.slice(1)).concat(ext).join("") + tail;
+      }
+      if (numeralTick !== null) { numInput.value = value; numInput.focus(); }
+      else setNumeral(tick, value);
     } else {
       const fig = btn.dataset.fig;
       const cur = numeralTick !== null ? numInput.value : score.numerals[tick] || "";
@@ -537,8 +584,25 @@ function createEditor(root, opts) {
   let resizeTimer = null;
   window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if (staffBox.clientWidth) render(); }, 120); });
 
-  syncControls();
-  render();
+  // The staff may be hidden (another tab) or not laid out yet when first drawn, e.g. on iPad: draw again once it has a width.
+  if (window.ResizeObserver) {
+    let lastWidth = 0;
+    new ResizeObserver(() => {
+      const w = staffBox.clientWidth;
+      if (w && w !== lastWidth) { lastWidth = w; render(); }
+    }).observe(staffBox);
+  }
+
+  try {
+    syncControls();
+    render();
+  } catch (err) {
+    // a saved score that can't be drawn: start again from the default one
+    score = opts.initial ? cloneScore(opts.initial) : emptyScore();
+    try { if (opts.storageKey) localStorage.setItem(opts.storageKey, JSON.stringify(score)); } catch (err2) { /* ignore */ }
+    syncControls();
+    render();
+  }
 
   return {
     getScore: () => score,
