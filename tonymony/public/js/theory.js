@@ -173,7 +173,20 @@ function addExtensions(tones, root, rootPc, triad, top, altText) {
 
 // Parse a letter-name chord symbol such as "C+", "Cdim7", "Bbm7b5", "E7#11", "G13".
 // Returns a chord, null if it doesn't look like one, or {error}.
+// A slash bass note, as in "C/E", must be one of the chord's tones.
 function parseLetterChord(s, key) {
+  const sl = s.match(/^([^/]*)\/([A-G])(bb|b|##|#)?$/);
+  if (sl) {
+    const c = parseLetterChord(sl[1], key);
+    if (!c || c.error) return c;
+    const bass = { l: LETTERS.indexOf(sl[2]), a: sl[3] ? (sl[3][0] === "b" ? -sl[3].length : sl[3].length) : 0 };
+    const tone = findTonePc(c, pcOf(bass));
+    if (!tone) return { error: `${pcName(bass)} isn't in ${c.name}, so it can't be the bass note` };
+    c.bassRole = tone.role;
+    c.inversion = Math.max(0, c.tones.indexOf(tone));
+    c.name += "/" + pcName(tone);
+    return c;
+  }
   const m = s.match(/^([A-G])(bb|b|##|#)?(.*)$/);
   if (!m) return null;
   const sm = m[3].match(/^(dim|°|ø|aug|\+|min|m|-)?(M)?(?:(7|9|11|13)((?:[b#](?:5|9|11|13))*))?$/);

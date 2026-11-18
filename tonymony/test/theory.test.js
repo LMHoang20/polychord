@@ -76,6 +76,17 @@ test("letter-name chord symbols", () => {
   assert.match(tones("H7"), /ERROR/);
 });
 
+test("letter-name chords with a slash bass note", () => {
+  assert.equal(tones("C/E"), "C E G / bass 3");
+  assert.equal(tones("C/G"), "C E G / bass 5");
+  assert.equal(tones("G7/F"), "G B D F / bass 7");
+  assert.equal(tones("Am/C"), "A C E / bass 3");
+  assert.match(tones("C/D"), /ERROR/);
+  const name = n => t.get(`parseNumeral(${JSON.stringify(n)}, { tonic: parseNote("C"), scale: "major" }).name`);
+  assert.equal(name("C/E"), "C/E");
+  assert.equal(tones("V/V"), "D F♯ A / bass 1");   // still a secondary chord
+});
+
 test("Roman numerals: chromatic chords", () => {
   assert.equal(tones("N6"), "D♭ F A♭ / bass 3");
   assert.equal(tones("It+6"), "A♭ C F♯ / bass b6");
