@@ -14,6 +14,7 @@ const DUR_GLYPH = { w: "", h: "", q: "", e: "", s: "" };
 const ACC_BUTTONS = [[-2, "", "Double flat"], [-1, "", "Flat ( - )"], [0, "", "Natural ( n )"], [1, "", "Sharp ( = )"], [2, "", "Double sharp"]];
 const EXTRA_CHORDS = ["V7", "viiø7", "vii°7", "Cad64", "N6", "It+6", "Fr+6", "Ger+6", "V/V", "V7/V", "vii°7/V", "V7/IV", "V7/ii", "V7/vi", "bVI", "iv"];
 const FIGURE_CHIPS = ["6", "64", "7", "65", "43", "42"];
+const SYMBOL_CHIPS = [["+", "Augmented"], ["°", "Diminished"], ["ø", "Half-diminished"]];
 
 function h(tag, attrs, html) {
   const el = document.createElement(tag);
@@ -156,6 +157,10 @@ function createEditor(root, opts) {
     FIGURE_CHIPS.forEach(f => figs.appendChild(h("button", { type: "button", class: "chip fig-chip", "data-fig": f, title: `Add figure ${f}` }, f)));
     figs.appendChild(h("button", { type: "button", class: "chip fig-chip", "data-fig": "", title: "Remove the chord at this beat" }, "✕"));
     chips.appendChild(figs);
+    const syms = h("div", { class: "chip-row" });
+    syms.appendChild(h("span", { class: "chip-label" }, "Symbols"));
+    SYMBOL_CHIPS.forEach(([s, name]) => syms.appendChild(h("button", { type: "button", class: "chip fig-chip", "data-sym": s, title: `${name}: put ${s} on the chord at this beat` }, s)));
+    chips.appendChild(syms);
   }
   function chordTitle(c) {
     const p = parseNumeral(c, key());
@@ -335,6 +340,14 @@ function createEditor(root, opts) {
       else setNumeral(tick, btn.dataset.num);
       const nx = nextNumeralTick(tick, 1);
       if (nx !== null && !selected) openNumeral(nx);
+    } else if (btn.dataset.sym !== undefined) {
+      const sym = btn.dataset.sym;
+      const cur = numeralTick !== null ? numInput.value : score.numerals[tick] || "";
+      // ° and ø go on lowercase numerals, + on uppercase ones
+      const value = cur.replace(/^([#b]*)([IViv]+)[°ø+]?/, (m, acc, rn) => acc + (sym === "+" ? rn.toUpperCase() : rn.toLowerCase()) + sym);
+      if (value === cur) { status.textContent = "Pick a chord first, then add the symbol."; return; }
+      if (numeralTick !== null) { numInput.value = value; numInput.focus(); }
+      else setNumeral(tick, value);
     } else {
       const fig = btn.dataset.fig;
       const cur = numeralTick !== null ? numInput.value : score.numerals[tick] || "";
