@@ -202,6 +202,12 @@ function checkMotion(p, s, prevChord, chord, add) {
     }
   });
 
+  // All four parts moving the same way
+  if (VOICES.every(moved)) {
+    const dirs = VOICES.map(v => Math.sign(noteMidi(s.notes[v].n) - noteMidi(p.notes[v].n)));
+    if (dirs.every(d => d === dirs[0])) add("warn", "same-direction", s.tick, `All four parts move ${dirs[0] > 0 ? "up" : "down"} together. Move at least one part the other way for independent lines.`, marks(VOICES));
+  }
+
   // Overlap: a voice moves past where its neighbour just was.
   ADJACENT.forEach(([u, w]) => {
     if (!both(u) || !both(w)) return;

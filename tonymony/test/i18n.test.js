@@ -53,7 +53,9 @@ test("i18n: every checker message is translated in every language", () => {
   const msgs = mess.map(x => x.msg);
   msgs.push("Add Roman numerals under the bass to check the chords too. For now only voice leading is checked.",
     "Parallel octaves between the Soprano and Bass (C5/C3 → D5/D3).",
-    "Direct (hidden) 5ths in the outer voices: the Soprano leaps into a perfect 5th in similar motion with the Bass.");
+    "Direct (hidden) 5ths in the outer voices: the Soprano leaps into a perfect 5th in similar motion with the Bass.",
+    "All four parts move up together. Move at least one part the other way for independent lines.",
+    "All four parts move down together. Move at least one part the other way for independent lines.");
   assert.ok(msgs.length > 5);
   for (const lang of ["vi", "zh", "th", "fr", "es", "ru"]) {
     const s = setup(lang);
