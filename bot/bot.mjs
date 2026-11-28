@@ -8,6 +8,7 @@
 import { spawn } from "node:child_process";
 import { cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const { GH_TOKEN, REPO } = process.env;
 const POLL_MS = Number(process.env.POLL_SECONDS || 60) * 1000;
@@ -22,11 +23,6 @@ const TEST_TIMEOUT_MS = 10 * 60 * 1000;
 const FIX_ATTEMPTS = 2; // extra Claude runs when the final test run fails
 const ATTEMPTS = 3; // tries per request before giving up
 const RETRY_DELAY_MS = 60 * 1000; // wait before retry n is n times this
-
-if (!GH_TOKEN || !REPO) throw new Error("GH_TOKEN and REPO must be set (see .env.example)");
-if (!process.env.CLAUDE_CODE_OAUTH_TOKEN && !process.env.ANTHROPIC_API_KEY) {
-  throw new Error("Set CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY (see .env.example)");
-}
 
 // Only what Claude needs. Notably not GH_TOKEN, which stays with root.
 const agentEnv = {
@@ -106,6 +102,15 @@ async function gh(method, path, body) {
 
 const comment = (number, body) => gh("POST", `/repos/${REPO}/issues/${number}/comments`, { body });
 
+async function allComments(number) {
+  const all = [];
+  for (let page = 1; ; page++) {
+    const batch = await gh("GET", `/repos/${REPO}/issues/${number}/comments?per_page=100&page=${page}`);
+    all.push(...(batch ?? []));
+    if (!batch || batch.length < 100) return all;
+  }
+}
+
 async function allowlist() {
   const v = await gh("GET", `/repos/${REPO}/actions/variables/ISSUE_BOT_ALLOWLIST`);
   return new Set((v ? JSON.parse(v.value) : []).map(login => login.toLowerCase()));
@@ -128,6 +133,52 @@ function markDone(kind, id) {
   saveState();
 }
 
+// ---------- the request ----------
+
+// The bot comments as the owner's account, so its replies are told apart from
+// the owner's own comments by how they start.
+const BOT_REPLY = /^(On it!|Done!|I didn't change anything|I have a first version|Sorry, I couldn't|Sorry, I can only|\*\*The tests still fail\*\*)/;
+const HISTORY_ENTRIES = 20;
+const HISTORY_ENTRY_CHARS = 2000;
+const HISTORY_CHARS = 20000;
+const DIFF_CHARS = 20000;
+
+const cut = (text, max) => text.length > max ? `${text.slice(0, max)}\n[cut off here]` : text;
+
+// The thread so far on the issue and its PR, oldest first: every earlier
+// request and the bot's answers, so a follow-up like "I mean the staff" makes
+// sense. `beforeId` leaves out the comment being handled and anything newer.
+export function conversation(comments, { beforeId } = {}) {
+  const entries = comments
+    .filter(c => c.user?.type !== "Bot" && (!beforeId || c.id < beforeId))
+    .sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id - b.id)
+    .map(c => {
+      const text = c.body.trim();
+      if (text.startsWith("On it!")) return null;
+      if (BOT_REPLY.test(text)) {
+        // The links and instructions after the summary are the same every time.
+        return { who: "Bot", text: text.split(/\n\n(?:\*\*Pull request:\*\*|To try again, reply)/)[0] };
+      }
+      return { who: c.user.login, text: text.replace(/^\/bot\b\s*/i, "") };
+    })
+    .filter(e => e && e.text)
+    .slice(-HISTORY_ENTRIES)
+    .map(e => `**${e.who}:** ${cut(e.text, HISTORY_ENTRY_CHARS)}`);
+  while (entries.join("\n\n").length > HISTORY_CHARS && entries.length > 1) entries.shift();
+  return entries.join("\n\n");
+}
+
+export function buildRequest({ title, body, history, changes, followUp }) {
+  const parts = [`## The issue: ${title}\n\n${body ?? ""}`.trim()];
+  if (history) parts.push(`## Earlier conversation (oldest first)\n\n${history}`);
+  if (changes) {
+    parts.push("## What this branch already changes compared with the live site\n\n"
+      + `Files:\n\`\`\`\n${changes.stat}\n\`\`\`\n\n\`\`\`diff\n${cut(changes.diff, DIFF_CHARS)}\n\`\`\``);
+  }
+  if (followUp) parts.push(`## Latest message (act on this one)\n\n${followUp}`);
+  return parts.join("\n\n");
+}
+
 // ---------- the work ----------
 
 // failingTests: output of a failed `npm test` after an earlier attempt, so this
@@ -144,6 +195,8 @@ ${failingTests}
 - TonyMony, a 4-part SATB harmony checker and harmonizer: tonymony/public/, tested in tonymony/test/.
 
 Rules:
+- The request can hold the issue, the earlier conversation, what this branch already changes, and a latest message. When there is a latest message, act on it only. The rest is context: don't answer earlier questions again, and don't ask for details the user already gave.
+- If the user says something is broken on the preview link but fine on the live site, look first at what this branch already changes: that is the only difference between the two.
 - Work out from the request which site it is about and change only that site. If you can't tell, change nothing and ask.
 - Read README.md first and follow it: plain HTML, CSS and JavaScript, no dependencies, no build step, classic script tags that share globals.
 - Only edit files in public/, test/, tonymony/public/, tonymony/test/ and README.md. Changes anywhere else are thrown away.
@@ -245,8 +298,14 @@ async function handle(job, ctx, attempt) {
     await check(run("chown", ["-R", `${AGENT_UID}:${AGENT_UID}`, WORK]), "chown");
 
     const { title, body } = await gh("GET", `/repos/${REPO}/issues/${issue}`);
-    const request = `## ${title}\n\n${body ?? ""}`
-      + (job.followUp ? `\n\n## Follow-up request (most recent, takes priority)\n\n${job.followUp}` : "");
+    const [botPr] = await gh("GET", `/repos/${REPO}/pulls?state=all&head=${ctx.owner}:${encodeURIComponent(branch)}`);
+    const comments = [...await allComments(issue), ...(botPr ? await allComments(botPr.number) : [])];
+    const history = conversation(comments, { beforeId: job.kind === "comments" ? job.id : undefined });
+    const changes = exists ? {
+      stat: (await git("diff", "--stat", `origin/${ctx.base}...HEAD`)).trimEnd(),
+      diff: (await git("diff", `origin/${ctx.base}...HEAD`)).trim(),
+    } : null;
+    const request = buildRequest({ title, body, history, changes: changes?.diff ? changes : null, followUp: job.followUp });
     let summary = await runClaude(request);
     let tests = await runTests();
     for (let attempt = 1; tests.code !== 0 && attempt <= FIX_ATTEMPTS; attempt++) {
@@ -350,6 +409,10 @@ async function poll(ctx) {
 }
 
 async function main() {
+  if (!GH_TOKEN || !REPO) throw new Error("GH_TOKEN and REPO must be set (see .env.example)");
+  if (!process.env.CLAUDE_CODE_OAUTH_TOKEN && !process.env.ANTHROPIC_API_KEY) {
+    throw new Error("Set CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY (see .env.example)");
+  }
   process.on("SIGTERM", () => process.exit(0));
   const repo = await gh("GET", `/repos/${REPO}`);
   const ctx = { base: repo.default_branch, owner: repo.owner.login, me: await gh("GET", "/user") };
@@ -370,4 +433,5 @@ async function main() {
   }
 }
 
-main().catch(err => { log(err); process.exit(1); });
+// Only when run directly, so tests can import the functions above.
+if (process.argv[1] === fileURLToPath(import.meta.url)) main().catch(err => { log(err); process.exit(1); });
