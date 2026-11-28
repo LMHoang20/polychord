@@ -147,6 +147,12 @@ select:focus, input:focus, button:focus-visible, .ed-staff:focus-visible, .issue
 
 /* ---------- Editor ---------- */
 .editor { display: flex; flex-direction: column; gap: 10px; }
+.ed-tools {
+  position: sticky; top: 58px; z-index: 30; display: flex; flex-direction: column; gap: 10px;
+  background: var(--panel); padding: 8px 0; border-bottom: 1px solid var(--border);
+  /* Taller than this, it would cover the staff: it scrolls on its own instead (phones). */
+  max-height: 45vh; max-height: 45dvh; overflow-y: auto; overscroll-behavior: contain;
+}
 .ed-settings { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
 .time-pick { display: inline-flex; align-items: center; gap: 4px; }
 .ed-toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -266,4 +272,7 @@ details li { margin-bottom: 4px; }
   .issue { grid-template-columns: auto 1fr; }
   .issue .msg { grid-column: 1 / -1; }
   .chip-label { width: 100%; }
+  /* The nav wraps to three rows here; pinning it too would leave no room for the staff. */
+  .nav { position: static; }
+  .ed-tools { top: 0; }
 }

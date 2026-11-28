@@ -89,7 +89,9 @@ function createEditor(root, opts) {
   const numInput = h("input", { class: "num-input", type: "text", spellcheck: "false", autocomplete: "off", "aria-label": "Roman numeral", placeholder: "V65" });
   staffBox.append(svgHolder, numInput);
   const status = h("p", { class: "ed-status", "aria-live": "polite" });
-  root.append(settings, toolbar, chips, staffBox, status);
+  const tools = h("div", { class: "ed-tools" });
+  tools.append(settings, toolbar, chips);
+  root.append(tools, staffBox, status);
 
   /* ---------- state helpers ---------- */
   const key = () => scoreKey(score);

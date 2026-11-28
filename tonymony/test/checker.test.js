@@ -26,6 +26,15 @@ test("contrary octaves warn, oblique motion is fine", () => {
   assert.deepEqual(rules({ S: "G4 G4", A: "E4 D4", T: "C4 B3", B: "C3 G2", numerals: ["I", "V"] }), []);
 });
 
+test("all four parts moving the same way warns, one part staying or going the other way does not", () => {
+  const down = check({ S: "G4 F4", A: "E4 D4", T: "C4 B3", B: "C3 G2", numerals: ["I", "V"] }).issues.filter(i => i.rule === "same-direction");
+  assert.equal(down.length, 1);
+  assert.equal(down[0].level, "warn");
+  assert.match(down[0].msg, /All four parts move down/);
+  assert.equal(rules({ S: "G4 G4", A: "E4 D4", T: "C4 B3", B: "C3 G2", numerals: ["I", "V"] }).includes("warn:same-direction"), false);
+  assert.equal(rules({ S: "G4 F4", A: "E4 D4", T: "C4 B3", B: "C3 D3", numerals: ["I", "V"] }).includes("warn:same-direction"), false);
+});
+
 test("missing chord tones, wrong notes and wrong bass", () => {
   assert.ok(check({ S: "G4", A: "G4", T: "C4", B: "C3", numerals: ["I"] }).issues.some(i => i.rule === "missing" && /3rd \(E\)/.test(i.msg)));
   assert.ok(check({ S: "D5", A: "G4", T: "B3", B: "G2", numerals: ["V7"] }).issues.some(i => i.rule === "missing" && /7th \(F\)/.test(i.msg)));
