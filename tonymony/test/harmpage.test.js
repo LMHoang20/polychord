@@ -38,7 +38,7 @@ test("the whole page starts, and Harmonize loads its example", async () => {
   process.off("unhandledRejection", onErr);
   assert.deepEqual(errors.map(e => e.stack), []);
   byId.harmClear.listeners.click[0]();
-  const staff = byId.harmEditor.children[3];
+  const staff = byId.harmEditor.children[1];
   staff.listeners.mousedown[0]({ target: staff, clientX: 200, clientY: 60, preventDefault() {} });
   staff.listeners.mousedown[0]({ target: staff, clientX: 200, clientY: 60, preventDefault() {} });
   const saved = JSON.parse(store["tm-harm"]);
